@@ -1,10 +1,13 @@
 import React from 'react';
 import FoodList from "@/components/food/FoodList";
+import {getStore} from "@/app/(main)/food/actions";
 
-function Page() {
+async function Page() {
+    const data = await getStore();
+
     return (
         <div>
-            <FoodList />
+            <FoodList storeList={data || []} />
         </div>
     );
 }

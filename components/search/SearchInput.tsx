@@ -1,12 +1,13 @@
 import React from 'react';
+import {SearchIcon} from "@/lib/icons";
 
 function SearchInput() {
     return (
-        <div className={'flex items-center border rounded-lg w-full p-2 h-16 border-gray-300'}>
-            <div className={'p-2'}>
-                <input className={'flex items-center justify-center'} placeholder={'검색어를 입력해주세요.'}/>
+        <div className={'flex p-2 justify-between'}>
+            <div className={'rounded-lg border w-full'}>
+                <input className={'flex p-2 items-center text-center justify-center'} placeholder={'검색어를 입력해주세요.'}/>
             </div>
-
+            <SearchIcon/>
         </div>
     );
 }
