@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 
-function Page() {
+async function Page() {
     return (
         <div>여행</div>
     );

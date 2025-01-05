@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 
-function Page() {
+async function Page() {
     return (
-        <div></div>
+        <div>호텔</div>
     );
 }
 
