@@ -1,7 +1,7 @@
-import {redirect} from "next/navigation";
-
 function Default() {
-    redirect('/')
+    return (
+        <div>NOT FOUND</div>
+    )
 }
 
 export default Default;
