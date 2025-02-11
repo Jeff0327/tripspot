@@ -1,8 +1,11 @@
 import React from 'react';
+import Carousel from "@/components/main/Carousel";
 
 function Page() {
     return (
-        <div>메인페이지</div>
+        <div className={'my-2'}>
+            <Carousel/>
+        </div>
     );
 }
 

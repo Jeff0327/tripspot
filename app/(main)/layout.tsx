@@ -8,11 +8,11 @@ interface RootLayoutProps {
 }
 
 function RootLayout({children}: RootLayoutProps) {
+
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <div className="min-h-screen">
                 <Header/>
-                <SearchInput/>
                 <Navigation/>
                 <main>
                     {children}

@@ -1,14 +1,18 @@
 import React from 'react';
 import FoodList from "@/components/food/FoodList";
-import {getStore} from "@/app/(main)/food/actions";
+import {getRestaurant} from "@/app/(main)/food/actions";
+import SearchInput from "@/components/layout/search/SearchInput";
 
-async function Page({searchParams}:{searchParams:Promise<{searchTerms?:string}>}) {
-
-    const {searchTerms} = await searchParams;
-    const data = await getStore(searchTerms);
+async function Page({
+                        searchParams
+                    }: {
+    searchParams: { searchTerm?: string }
+}) {
+    const data = await getRestaurant(searchParams.searchTerm);
 
     return (
         <div>
+            <SearchInput/>
             <FoodList storeList={data || []} />
         </div>
     );

@@ -1,8 +1,11 @@
-import React, {Suspense} from 'react';
+import React from 'react';
+import SearchInput from "@/components/layout/search/SearchInput";
 
 async function Page() {
     return (
-        <div>호텔</div>
+        <div>
+            <SearchInput/>
+            호텔</div>
     );
 }
 

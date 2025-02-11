@@ -1,8 +1,8 @@
 import React from 'react';
 
-async function Page() {
+function Page() {
     return (
-        <div>여행</div>
+        <div></div>
     );
 }
 
