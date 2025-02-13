@@ -6,9 +6,10 @@ import SearchInput from "@/components/layout/search/SearchInput";
 async function Page({
                         searchParams
                     }: {
-    searchParams: { searchTerm?: string }
+    searchParams: Promise<{ searchTerm?: string }>
 }) {
-    const data = await getRestaurant(searchParams.searchTerm);
+    const {searchTerm} = await searchParams
+    const data = await getRestaurant(searchTerm);
 
     return (
         <div>

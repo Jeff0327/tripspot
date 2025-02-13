@@ -71,3 +71,20 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/*hidden input arrow button*/
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* Webkit 브라우저(Chrome, Safari 등)를 위한 스크롤바 숨기기 */
+*::-webkit-scrollbar {
+  display: none;
+}

@@ -1,6 +1,14 @@
 import React from 'react';
 
-function Page() {
+async function Page({
+                        searchParams
+                    }: {
+    searchParams: Promise<{ loginType: string }>
+}) {
+    const {loginType} =await searchParams
+    if(!loginType) {
+
+    }
     return (
         <div></div>
     );
