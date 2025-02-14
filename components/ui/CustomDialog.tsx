@@ -75,19 +75,19 @@ const CustomDialogContent = React.forwardRef<
 });
 CustomDialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({
+const CustomDialogHeader = ({
                           className,
                           ...props
                       }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            "flex flex-col space-y-1.5 text-center sm:text-left",
+            "flex flex-col space-y-1.5 text-center",
             className
         )}
         {...props}
     />
 )
-DialogHeader.displayName = "DialogHeader"
+CustomDialogHeader.displayName = "CustomDialogHeader"
 
 const DialogFooter = ({
                           className,
@@ -137,7 +137,7 @@ export {
     DialogTrigger,
     DialogClose,
     CustomDialogContent,
-    DialogHeader,
+    CustomDialogHeader,
     DialogFooter,
     DialogTitle,
     DialogDescription,

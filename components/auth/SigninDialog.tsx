@@ -1,9 +1,10 @@
 'use client'
 import React from 'react';
 import {
-    CustomDialogContent, Dialog,
+    CustomDialogContent,
+    CustomDialogHeader,
+    Dialog,
     DialogDescription,
-    DialogHeader,
     DialogTitle,
 } from "@/components/ui/CustomDialog";
 import Link from "next/link";
@@ -30,7 +31,7 @@ export default function SigninDialog({
     return (
         <Dialog open={isOpen}>
             <CustomDialogContent className={'rounded-md'}>
-                <DialogHeader>
+                <CustomDialogHeader>
                     <DialogTitle>로그인</DialogTitle>
                     <FormContainer action={signin} onResult={handleResult}>
                     <DialogDescription className={'flex flex-col gap-2 justify-center items-center py-8'}>
@@ -39,7 +40,7 @@ export default function SigninDialog({
                         <button type={'submit'} className={'bg-black text-white w-full rounded-sm py-2'}>로그인</button>
                     </DialogDescription>
                     </FormContainer>
-                </DialogHeader>
+                </CustomDialogHeader>
                 <Link href={'/signup?isOpen=true'}
                       className={'flex font-semibold justify-center items-center text-xs underline'}>
                     계정이 없으신가요?
