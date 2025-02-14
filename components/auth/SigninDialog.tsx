@@ -31,7 +31,7 @@ export default function SigninDialog({
         <Dialog open={isOpen}>
             <CustomDialogContent className={'rounded-md'}>
                 <DialogHeader>
-                    <DialogTitle></DialogTitle>
+                    <DialogTitle>로그인</DialogTitle>
                     <FormContainer action={signin} onResult={handleResult}>
                     <DialogDescription className={'flex flex-col gap-2 justify-center items-center py-8'}>
                         <CustomInput name={'userId'} type={'text'} placeholder={'아이디를 입력해주세요.'}/>
