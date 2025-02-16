@@ -12,7 +12,6 @@ export async function randomPlace(): Promise<Store[] | null> {
             return null
         }
 
-        console.log(data)
         if (!data) {
             console.log('No data found in store table')
             return null

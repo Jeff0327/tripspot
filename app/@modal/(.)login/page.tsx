@@ -1,20 +1,26 @@
 import React from 'react';
 import SigninDialog from "@/components/auth/SigninDialog";
 
-function Page({
-                                 searchParams,
-                             }: {
+async function Page({
+                        searchParams,
+                    }: {
     searchParams: { isOpen?: string }
 }) {
-    const isOpen = searchParams?.isOpen === 'true'
+    const { isOpen } = await searchParams;
+    const isModalOpen = isOpen === 'true';
 
-    return (
-        <div className="min-h-screen flex items-center justify-center">
+    if(!isOpen){
+        return null;
+    }else{
+        return (
             <div className="min-h-screen flex items-center justify-center">
-                <SigninDialog isOpen={isOpen}/>
+                <div className="min-h-screen flex items-center justify-center">
+                    <SigninDialog isOpen={isModalOpen}/>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
+
 }
 
 export default Page;

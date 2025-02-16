@@ -13,6 +13,7 @@ import FormContainer, {FormState} from "@/components/ui/form";
 import {signin} from "@/app/(main)/(modal)/login/actions";
 import {ERROR_CODES} from "@/utils/errorMessage";
 import {useRouter} from "next/navigation";
+import useAlert from "@/lib/notiflix/useAlert";
 
 
 export default function SigninDialog({
@@ -21,15 +22,18 @@ export default function SigninDialog({
     isOpen: boolean
 }) {
     const router= useRouter()
+    const [isModal,setIsModal]=React.useState(false);
+    const {notify} = useAlert()
     const handleResult=(formState:FormState)=>{
         if(formState.code===ERROR_CODES.SUCCESS){
-            router.push(formState.redirect || '/main')
+            setIsModal(false)
+            router.push('/main')
         }else{
-
+            notify.failure(formState.message)
         }
     }
     return (
-        <Dialog open={isOpen}>
+        <Dialog open={isModal} onOpenChange={setIsModal}>
             <CustomDialogContent className={'rounded-md'}>
                 <CustomDialogHeader>
                     <DialogTitle>로그인</DialogTitle>

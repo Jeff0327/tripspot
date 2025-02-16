@@ -1,10 +1,12 @@
 'use server'
 import {ERROR_CODES} from "@/utils/errorMessage";
 import {FormState} from "@/components/ui/form";
+import {createClient} from "@/utils/supabase/server";
 
 export async function signin(formData:FormData):Promise<FormState>{
     const userId = formData.get('userId') as string;
     const userPassword = formData.get('userPassword') as string;
+    const supabase = await createClient();
     if(!userId || !userPassword){
         return {
             code:ERROR_CODES.VALIDATION_ERROR,
@@ -13,6 +15,17 @@ export async function signin(formData:FormData):Promise<FormState>{
     }
     try{
 
+        const { error } = await supabase.auth.signInWithPassword({
+            email:userId,
+            password:userPassword,
+        });
+        if(error){
+            console.log(error)
+            return {
+                code:ERROR_CODES.VALIDATION_ERROR,
+                message:"아이디 비밀번호를 확인하세요."
+            }
+        }
         return {
             code:ERROR_CODES.SUCCESS,
             message:'',

@@ -4,6 +4,7 @@ import {ERROR_CODES} from "@/utils/errorMessage";
 import {FormState} from "@/components/ui/form";
 import {createClient} from "@/utils/supabase/server";
 import {AdminClient} from "@/utils/supabase/admin";
+import {isValidEmail} from "@/lib/utils";
 
 export async function signupAction(formData:FormData):Promise<FormState>{
     const userId=formData.get('userId') as string;
@@ -47,7 +48,7 @@ export async function signupAction(formData:FormData):Promise<FormState>{
                 message:'아이디 비밀번호를 확인해주세요.'
             }
         }else{
-            const admin = await AdminClient();
+            const admin = AdminClient();
 
             const {error} = await admin.from('users').insert({
                 loginType:typeUser||'',user_id:userId,password:userPassword,nickname
@@ -61,13 +62,14 @@ export async function signupAction(formData:FormData):Promise<FormState>{
 
             return {
                 code:ERROR_CODES.SUCCESS,
-                message:'',
+                message:'회원가입이 되었습니다.',
                 redirect:'/main'
             }
         }
 
 
     }catch(error){
+        console.log(error)
         return {
             code:ERROR_CODES.SERVER_ERROR,
             message:'서버에러가 발생하였습니다.'
@@ -83,6 +85,13 @@ export async function checkId(formData:FormData){
         }
     }
     try{
+
+        if(!isValidEmail(userId)) {
+            return {
+                code:ERROR_CODES.VALIDATION_ERROR,
+                message:'올바른 이메일 형식이 아닙니다.'
+            }
+        }
 
         return {
             code:ERROR_CODES.SUCCESS,

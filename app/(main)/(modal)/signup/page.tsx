@@ -1,20 +1,26 @@
 import React from 'react';
 import SignupDialog from "@/components/auth/SignupDialog";
 
-function Page({
-                  searchParams,
-              }: {
-    searchParams: { isOpen?: string }
+async function Page({
+                        searchParams,
+                    }: {
+    searchParams: Promise<{ isOpen?: string }>
 }) {
-    const isOpen = searchParams?.isOpen === 'true'
+    const { isOpen } = await searchParams;
 
-    return (
-        <div className="min-h-screen flex items-center justify-center">
+    const isModalOpen = isOpen === 'true';
+
+    if (!isOpen) {
+        return null;
+    } else {
+        return (
             <div className="min-h-screen flex items-center justify-center">
-                <SignupDialog isOpen={isOpen}/>
+                <div className="min-h-screen flex items-center justify-center">
+                    <SignupDialog isOpen={isModalOpen}/>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 export default Page;

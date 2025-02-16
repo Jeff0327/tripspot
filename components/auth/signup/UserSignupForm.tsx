@@ -6,15 +6,17 @@ import {ERROR_CODES} from "@/utils/errorMessage";
 import {CustomInput} from "@/components/ui/CustomInput";
 import {Button} from "@/components/ui/button";
 import useAlert from "@/lib/notiflix/useAlert";
+import {useRouter} from "next/navigation";
 
 function UserSignupForm() {
     const {notify} = useAlert()
     const [isIdChecked, setIsIdChecked] = useState(false);
     const [userId, setUserId] = useState('');
-
+    const router = useRouter()
     const signupResult=(formState:FormState)=>{
         if(formState.code===ERROR_CODES.SUCCESS){
             notify.success(formState.message)
+            router.push('/main')
         }else{
             notify.failure(formState.message)
         }
@@ -50,7 +52,7 @@ function UserSignupForm() {
                 <CustomInput type={'hidden'} name={'typeUser'} value={'user'}/>
                 <div className={'flex flex-col gap-2'}>
                     <div className={'flex flex-col gap-2'}>
-                        <CustomInput name={'userId'} value={userId} onChange={handleIdChange} placeholder={'사용하실 아이디'}/>
+                        <CustomInput name={'userId'} value={userId} onChange={handleIdChange} placeholder={'사용하실 아이디(이메일형식)'}/>
                         <Button disabled={!userId} onClick={handleIdCheck} type={'button'}>아이디 확인</Button>
                     </div>
                     <div className={'flex flex-col gap-2'}>

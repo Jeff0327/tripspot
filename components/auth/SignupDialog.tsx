@@ -13,7 +13,6 @@ export default function SignupDialog({
                                          isOpen,
                                      }: {
     isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
 }) {
     const router = useRouter();
     const [isModal,setIsModal]=React.useState(isOpen)
