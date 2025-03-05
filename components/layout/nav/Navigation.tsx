@@ -12,7 +12,7 @@ function Navigation() {
             <div className="max-w-screen-xl mx-auto px-4">
                 <div className="relative flex items-center h-16">
 
-                    <div className="flex items-center justify-center w-full">
+                    <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center w-full">
                         {navItems.map((item, index) => (
                             <Link href={item.link}
                                   key={index}

@@ -10,7 +10,9 @@ async function Page({
     const isModalOpen = isOpen === 'true';
 
     if(!isOpen){
-        return null;
+        return (
+            <div className={'min-h-[30vh] bg-green-500'}>asdasd</div>
+        )
     }else{
         return (
             <div className="min-h-screen flex items-center justify-center">

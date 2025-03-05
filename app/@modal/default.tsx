@@ -1,7 +1,5 @@
 function Default() {
-    return (
-        <div>NOT FOUND</div>
-    )
+    return null
 }
 
 export default Default;

@@ -22,7 +22,7 @@ export default function SigninDialog({
     isOpen: boolean
 }) {
     const router= useRouter()
-    const [isModal,setIsModal]=React.useState(false);
+    const [isModal,setIsModal]=React.useState(isOpen);
     const {notify} = useAlert()
     const handleResult=(formState:FormState)=>{
         if(formState.code===ERROR_CODES.SUCCESS){
@@ -32,6 +32,7 @@ export default function SigninDialog({
             notify.failure(formState.message)
         }
     }
+
     return (
         <Dialog open={isModal} onOpenChange={setIsModal}>
             <CustomDialogContent className={'rounded-md'}>

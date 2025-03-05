@@ -9,7 +9,7 @@ async function Page({
     const { isOpen } = await searchParams;
     const isModalOpen = isOpen === 'true';
 
-    if(!isOpen){
+    if(!isModalOpen){
         return null;
     }else{
         return (
