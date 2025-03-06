@@ -2,17 +2,15 @@ import React from 'react';
 import SigninDialog from "@/components/auth/SigninDialog";
 
 async function Page({
-                  searchParams,
-              }: {
-    searchParams: { isOpen?: string }
+                        searchParams,
+                    }: {
+    searchParams: Promise<{ isOpen?: string }>
 }) {
     const { isOpen } = await searchParams;
     const isModalOpen = isOpen === 'true';
 
-    if(!isOpen){
-        return (
-            <div className={'min-h-[30vh] bg-green-500'}>asdasd</div>
-        )
+    if(!isModalOpen){
+        return null;
     }else{
         return (
             <div className="min-h-screen flex items-center justify-center">

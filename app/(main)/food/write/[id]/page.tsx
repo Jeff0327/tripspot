@@ -2,7 +2,7 @@ import React from 'react';
 import {getOne} from "@/app/(main)/food/actions";
 import CreateReview from "@/components/store/CreateReview";
 
-async function Page({params}: { params: { id: string } }) {
+async function Page({params}: { params: Promise<{ id: string }> }) {
     const {id} = await params;
 
     if (!id) {

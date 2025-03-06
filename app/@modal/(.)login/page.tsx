@@ -4,7 +4,7 @@ import SigninDialog from "@/components/auth/SigninDialog";
 async function Page({
                         searchParams,
                     }: {
-    searchParams: { isOpen?: string }
+    searchParams: Promise<{ isOpen?: string }>
 }) {
     const { isOpen } = await searchParams;
     const isModalOpen = isOpen === 'true';
