@@ -11,7 +11,7 @@ function Navigation() {
         <nav className="fixed bottom-0 lg:left-0 lg:top-0 lg:h-full w-full lg:w-auto bg-white shadow-lg z-30 lg:mt-[10vh]">
             <div className="max-w-screen-xl lg:max-w-none mx-auto px-4 lg:h-full">
                 <div className="relative flex items-center h-full">
-                    <div className="fixed bottom-0 lg:static lg:flex lg:flex-col lg:h-full lg:justify-start left-0 right-0 flex items-center justify-center w-full border-t lg:border-t-0 lg:py-8">
+                    <div className="fixed bottom-0 lg:static lg:flex lg:flex-col lg:h-full lg:justify-start left-0 right-0 flex items-center justify-center w-full border-t lg:border-t-0 lg:py-8 bg-white">
                         {navItems.map((item, index) => (
                             <Link href={item.link}
                                   key={index}
