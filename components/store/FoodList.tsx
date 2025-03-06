@@ -16,8 +16,8 @@ import {useRouter} from "next/navigation";
 import {formatDistanceToNow} from 'date-fns';
 import {ko} from 'date-fns/locale';
 import {Review, StoreWithReviews} from "@/lib/types";
-
-
+import { FaRegUserCircle } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User | null }) {
     const {notify} = useAlert();
     const router = useRouter();
@@ -28,6 +28,12 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
         }
         router.push(`/food/write/${id}`);
     };
+    const handleCreateStore=()=>{
+        if (!user) {
+            return notify.info('로그인 후 이용해주세요.');
+        }
+        router.push(`/food/write`);
+    }
 
     // 리뷰 렌더링 함수
     const renderReviews = (storeId: string, reviews: Review[]) => {
@@ -63,9 +69,9 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                         unoptimized={true}
                                     />
                                 ) : (
-                                    <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                    <div className="w-8 h-8 bg-white rounded-full"><FaRegUserCircle  className={'w-full h-full'}/></div>
                                 )}
-                                <span className="font-medium">{review.user?.user_metadata?.name || '사용자'}</span>
+                                <span className="font-medium">{review.user?.user_metadata?.name || '익명'}</span>
                             </div>
                             <div className="text-sm text-gray-500">
                                 {formatDistanceToNow(new Date(review.created_at), {
@@ -112,12 +118,6 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
 
     return (
         <>
-            <Script
-                id="naver-map-script"
-                src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1_qUipzSMalpHd4IJD0W&submodules=geocoder"
-                strategy="afterInteractive"
-            />
-
             <div className="flex flex-col gap-2 p-2">
                 <Accordion type="single" collapsible>
                     {storeList.map((food) => (
@@ -137,9 +137,9 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                         ) : (
                                             <div className="w-[50px] h-[50px] bg-gray-200 rounded-lg"></div>
                                         )}
-                                        <div className="font-jalnan">{food.name}</div>
+                                        <div className="font-jalnan">{food.name && food.name.length>10 ? `${food.name.slice(0,10)}...` : food.name}</div>
                                     </div>
-                                    <div className="w-1/2 mx-auto font-jmt">{food.desc || ''}</div>
+                                    <div className="w-1/2 mx-auto font-jmt">{food.desc && food.desc.length>10 ? `${food.desc.slice(0,26)}...` : food.desc || ''}</div>
                                     <div className="flex flex-row items-center gap-1">
                                         <FaStar className="w-4 h-4 text-yellow-300"/>
                                         <CountUp className="font-study" end={food.star || 0} duration={3} decimals={1}
@@ -151,21 +151,21 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                 {food.detail ? (
                                     <div dangerouslySetInnerHTML={{__html: food.detail}} className="prose max-w-none mb-4"/>
                                 ) : (
-                                    <div className={'mb-4'}>
+                                    <div className={'mb-2'}>
                                         <div
                                             className="flex justify-center font-jalnan items-center min-h-[10vh] border rounded-lg">
                                             가게 정보가 없어요
                                         </div>
                                     </div>
                                 )}
-                                <div className="mb-4">
+                                <div className="mb-2">
                                     <div className="flex flex-col rounded-lg border overflow-hidden">
                                         <div className="p-2 text-sm bg-gray-50">주소: {food.address}</div>
                                     </div>
                                 </div>
 
                                 {/* 리뷰 섹션 */}
-                                <div className="mt-4 border-t pt-4">
+                                <div>
                                     {renderReviews(food.id, food.reviews || [])}
                                 </div>
                             </AccordionContent>
@@ -173,6 +173,7 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                     ))}
                 </Accordion>
             </div>
+            <button onClick={()=>handleCreateStore()} className={'flex flex-row items-center gap-1 fixed bottom-20 right-2 bg-sky-300 rounded-full px-7 py-3 text-white text-sm'}>등록하기<FaPlus /></button>
         </>
     );
 }

@@ -2,6 +2,7 @@
 import {ERROR_CODES} from "@/utils/errorMessage";
 import {FormState} from "@/components/ui/form";
 import {createClient} from "@/utils/supabase/server";
+import {redirect} from "next/navigation";
 
 export async function signin(formData:FormData):Promise<FormState>{
     const userId = formData.get('userId') as string;
@@ -38,3 +39,7 @@ export async function signin(formData:FormData):Promise<FormState>{
         }
     }
 }
+export const signOutAction = async () => {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+};

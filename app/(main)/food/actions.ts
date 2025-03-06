@@ -1,11 +1,10 @@
 'use server'
 import {createClient} from "@/utils/supabase/server";
-import {Store, UserData} from "@/lib/types";
+import {StoreWithReviews, UserData} from "@/lib/types";
 import {FormState} from "@/components/ui/form";
 import {ERROR_CODES} from "@/utils/errorMessage";
-import {User} from "@supabase/auth-js";
 
-export async function getRestaurant(searchTerm?: string): Promise<Store[]> {
+export async function getRestaurant(searchTerm?: string): Promise<StoreWithReviews[]> {
     const supabase = await createClient();
 
     try {
@@ -61,7 +60,7 @@ export async function getRestaurant(searchTerm?: string): Promise<Store[]> {
             if (!usersError && users) {
                 usersMap = users.reduce<Record<string, UserData>>((acc, user) => {
                     acc[user.id] = {
-                        email: user.email,
+                        email: user.email,            // 이미 email로 수정됨
                         name: user.nickname,
                         avatar_url: user.image_url
                     };
@@ -74,24 +73,24 @@ export async function getRestaurant(searchTerm?: string): Promise<Store[]> {
         return (stores || []).map(store => {
             const storeReviews = reviews
                 ? reviews.filter(review => review.store_id === store.id)
-                .map(review => {
-                    const userData = usersMap[review.user_id] || {};
+                    .map(review => {
+                        const userData = usersMap[review.user_id] || {};
 
-                    return {
-                        ...review,
-                        user: {
-                            id: review.user_id,
-                            user_id: userData.email,
-                            user_metadata: {
-                                name: userData.name || '사용자',
-                                avatar_url: userData.avatar_url
-                            }
-                        },
-                        images: review.images && typeof review.images === 'string'
-                            ? JSON.parse(review.images)
-                            : (Array.isArray(review.images) ? review.images : [])
-                    };
-                }):[]
+                        return {
+                            ...review,
+                            user: {
+                                id: review.user_id,
+                                email: userData.email || '',  // email 필드 추가
+                                user_metadata: {
+                                    name: userData.name || '사용자',
+                                    avatar_url: userData.avatar_url ||''
+                                }
+                            },
+                            images: review.images && typeof review.images === 'string'
+                                ? JSON.parse(review.images)
+                                : (Array.isArray(review.images) ? review.images : [])
+                        };
+                    }):[]
 
             return {
                 ...store,
@@ -234,6 +233,31 @@ export async function writeReview(formData: FormData): Promise<FormState> {
         return {
             code: ERROR_CODES.SERVER_ERROR,
             message: '에러가 발생하였습니다.'
+        }
+    }
+}
+export async function addStore(formData:FormData):Promise<FormState>{
+    const supabase = await createClient();
+    const {data: {user}} = await supabase.auth.getUser();
+    const content = formData.get('content') as string;
+    const images = formData.get('images') as string;
+    const mainImg = formData.get('mainImg') as string;
+    try{
+
+        if (!user) {
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '로그인 후 이용해주세요.'
+            }
+        }
+        return {
+            code:ERROR_CODES.SUCCESS,
+            message:'등록되었습니다.'
+        }
+    }catch(error){
+        return {
+            code:ERROR_CODES.SERVER_ERROR,
+            message:'에러가 발생하였습니다.'
         }
     }
 }

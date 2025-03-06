@@ -14,7 +14,7 @@ function Menu() {
     return (
             <Sheet>
                 <SheetTrigger asChild>
-                    <button><HiOutlineMenuAlt3 className={'w-5 h-5'}/></button>
+                    <button><HiOutlineMenuAlt3 className={'w-5 lg:w-8 h-5 lg:h-8'}/></button>
                 </SheetTrigger>
                 <SheetContent>
                     <SheetHeader>

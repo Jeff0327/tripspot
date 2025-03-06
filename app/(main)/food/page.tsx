@@ -1,5 +1,5 @@
 import React from 'react';
-import FoodList from "@/components/food/FoodList";
+import FoodList from "@/components/store/FoodList";
 import {getRestaurant} from "@/app/(main)/food/actions";
 import SearchInput from "@/components/layout/search/SearchInput";
 import {createClient} from "@/utils/supabase/server";

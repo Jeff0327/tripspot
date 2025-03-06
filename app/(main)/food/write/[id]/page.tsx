@@ -1,7 +1,6 @@
 import React from 'react';
-import BoardForm from "@/components/editor/BoardForm";
 import {getOne} from "@/app/(main)/food/actions";
-import {FaStar} from "react-icons/fa";
+import CreateReview from "@/components/store/CreateReview";
 
 async function Page({params}: { params: { id: string } }) {
     const {id} = await params;
@@ -21,9 +20,7 @@ async function Page({params}: { params: { id: string } }) {
             <div className={'flex flex-row gap-2 p-2'}>
                 <h2 className={'text-xl font-jalnan'}>{data.name} 리뷰작성</h2>
             </div>
-            <div className={'relative flex justify-between'}>
-                <BoardForm storeId={id}/>
-            </div>
+                <CreateReview storeId={id}/>
         </>
     )
 }

@@ -114,7 +114,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
         content: defaultValue,
         editorProps: {
             attributes: {
-                class: 'prose prose-sm focus:outline-none max-w-full min-h-[300px] p-2 overflow-x-auto',
+                class: 'prose prose-sm focus:outline-none max-w-full h-full p-2 overflow-visible',
             },
         },
         onUpdate: ({ editor }) => {
@@ -254,10 +254,6 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
                 >
                     <MdOutlineEmojiEmotions className="w-5 h-5"/>
                 </button>
-            </div>
-
-            {/* 두 번째 줄 - 서식 도구 */}
-            <div className="flex w-full mb-2">
                 <button
                     type="button"
                     onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -286,10 +282,6 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
                 >
                     <HiStrikethrough className="w-5 h-5"/>
                 </button>
-            </div>
-
-            {/* 세 번째 줄 - 정렬 도구 */}
-            <div className="flex w-full mb-2">
                 <button
                     type="button"
                     onClick={() => editor?.chain().focus().setTextAlign('left').run()}
@@ -317,9 +309,9 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
                     onChange={(e) => editor?.chain().focus().setColor(e.target.value).run()}
                 />
             </div>
+            {/*두번째 줄*/}
+            <div className="flex w-full mb-2">
 
-            {/* 네 번째 줄 - 선택 도구 */}
-            <div className="flex w-full justify-between">
                 <select
                     className="border border-gray-300 rounded px-1 py-1 text-sm w-full"
                     onChange={(e) => editor?.chain().focus().setFontFamily(e.target.value).run()}
@@ -345,7 +337,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
 
 
     return (
-        <div className="rounded relative w-full overflow-hidden border border-gray-300">
+        <div className="rounded relative w-full border border-gray-300">
             <input
                 type="hidden"
                 id={name}
@@ -362,8 +354,8 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
 
             {!readOnly && renderToolbar()}
 
-            <div className="w-full">
-                <EditorContent editor={editor} className="w-full"/>
+            <div className="w-full h-[30vh] max-h-[30vh] overflow-y-auto">
+                <EditorContent editor={editor} className="w-full h-full"/>
             </div>
 
             <Sticker

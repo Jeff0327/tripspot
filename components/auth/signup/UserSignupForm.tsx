@@ -48,7 +48,7 @@ function UserSignupForm() {
     }
     return (
         <FormContainer action={signupAction} onResult={signupResult}>
-            <div className={'flex flex-col min-h-[85vh] gap-3 p-4 justify-between'}>
+            <div className={'flex flex-col min-h-[85vh] mt-[5vh] lg:mt-[10vh] gap-3 p-4 justify-between'}>
                 <CustomInput type={'hidden'} name={'typeUser'} value={'user'}/>
                 <div className={'flex flex-col gap-2'}>
                     <div className={'flex flex-col gap-2'}>

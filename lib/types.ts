@@ -11,10 +11,10 @@ export interface Review {
     user_id: string;
     content: string;
     rating: number;
-    images: string[] | null;
+    images: string[];
     user?: {
         id: string;
-        email: string;  // user_id 대신 email
+        email: string;
         user_metadata: {
             name?: string;
             avatar_url?: string;

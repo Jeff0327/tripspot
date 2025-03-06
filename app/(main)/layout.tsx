@@ -1,6 +1,5 @@
 import React, {Suspense} from 'react';
 import Navigation from "@/components/layout/nav/Navigation";
-import SearchInput from "@/components/layout/search/SearchInput";
 import Header from "@/components/layout/header/Header";
 
 interface RootLayoutProps {
@@ -8,17 +7,21 @@ interface RootLayoutProps {
 }
 
 function RootLayout({children}: RootLayoutProps) {
-
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <div className="min-h-screen">
                 <div className={'mb-[5vh]'}>
-                <Header/>
+                    <Header/>
                 </div>
-                <Navigation/>
-                <main>
-                    {children}
-                </main>
+                <div className="lg:flex">
+                    <div className="lg:w-[110px] bg-red-500 hidden lg:block">
+                        {/* 이 영역은 네비게이션과 동일한 너비의 공간을 확보합니다 */}
+                    </div>
+                    <Navigation />
+                    <main className="w-full lg:flex-1 pb-16 lg:pb-0">
+                        {children}
+                    </main>
+                </div>
             </div>
         </Suspense>
     );
