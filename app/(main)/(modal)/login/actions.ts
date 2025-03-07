@@ -21,7 +21,6 @@ export async function signin(formData:FormData):Promise<FormState>{
             password:userPassword,
         });
         if(error){
-            console.log(error)
             return {
                 code:ERROR_CODES.VALIDATION_ERROR,
                 message:"아이디 비밀번호를 확인하세요."

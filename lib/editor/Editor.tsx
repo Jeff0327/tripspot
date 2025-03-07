@@ -114,7 +114,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
         content: defaultValue,
         editorProps: {
             attributes: {
-                class: 'prose prose-sm focus:outline-none max-w-full h-full p-2 overflow-visible',
+                class: 'prose prose-sm focus:outline-none max-w-full h-full p-2 overflow-visible min-h-[50vh]',
             },
         },
         onUpdate: ({ editor }) => {
@@ -157,7 +157,6 @@ const Editor = forwardRef<EditorRef, EditorProps>(({
         if (imagesInput) {
             imagesInput.value = JSON.stringify(imageLinks);
         }
-        console.log('Updated image links:', imageLinks);
     }, [imageLinks]);
 
     useImperativeHandle(ref, () => ({

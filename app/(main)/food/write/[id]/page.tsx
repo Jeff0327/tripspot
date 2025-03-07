@@ -17,7 +17,7 @@ async function Page({params}: { params: Promise<{ id: string }> }) {
     )
     return (
         <>
-            <div className={'flex flex-row gap-2 p-2'}>
+            <div className={'flex flex-row gap-2 p-2 lg:mt-[10vh]'}>
                 <h2 className={'text-xl font-jalnan'}>{data.name} 리뷰작성</h2>
             </div>
                 <CreateReview storeId={id}/>

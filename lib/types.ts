@@ -30,3 +30,8 @@ export interface UserData {
     name: string;
     avatar_url?: string | null;
 }
+export interface States<T=unknown> {
+    success: boolean;
+    data: T | null;
+    error: string | null;
+}

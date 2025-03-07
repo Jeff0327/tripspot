@@ -125,11 +125,11 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                             <AccordionTrigger className="border rounded-lg gap-1 border-gray-700 py-2 mb-1">
                                 <div className="flex justify-between p-2 items-center rounded-lg w-full">
                                     <div className="flex flex-row items-center gap-2 w-1/2">
-                                        {food.images && food.images.length > 0 ? (
+                                        {food.mainimage ? (
                                             <Image
                                                 width={150}
                                                 height={150}
-                                                src={food.images[0]}
+                                                src={food.mainimage}
                                                 alt={food.name}
                                                 unoptimized={true}
                                                 className="w-[50px] h-[50px] rounded-lg object-cover"

@@ -14,9 +14,7 @@ function RootLayout({children}: RootLayoutProps) {
                     <Header/>
                 </div>
                 <div className="lg:flex">
-                    <div className="lg:w-[110px] bg-red-500 hidden lg:block">
-                        {/* 이 영역은 네비게이션과 동일한 너비의 공간을 확보합니다 */}
-                    </div>
+                    <div className="lg:w-[110px] hidden lg:block"/>
                     <Navigation />
                     <main className="w-full lg:flex-1 pb-16 lg:pb-0">
                         {children}

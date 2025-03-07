@@ -236,28 +236,83 @@ export async function writeReview(formData: FormData): Promise<FormState> {
         }
     }
 }
-export async function addStore(formData:FormData):Promise<FormState>{
+export async function addStore(formData: FormData): Promise<FormState> {
     const supabase = await createClient();
-    const {data: {user}} = await supabase.auth.getUser();
-    const content = formData.get('content') as string;
-    const images = formData.get('images') as string;
-    const mainImg = formData.get('mainImg') as string;
-    try{
+    const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
+    if (!user) {
+        return {
+            code: ERROR_CODES.AUTH_ERROR,
+            message: '로그인 후 이용해주세요.'
+        }
+    }
+
+    try {
+        // 폼 데이터에서 필드 추출
+        const name = formData.get('name') as string;
+        const address = formData.get('address') as string;
+        const contents = formData.get('contents') as string;
+        const imagesStr = formData.get('images') as string;
+        const mainImage = formData.get('mainImage') as string;
+        const rating = parseFloat(formData.get('rating') as string) || 0;
+
+        // 필수 필드 유효성 검사
+        if (!name || !address) {
             return {
-                code: ERROR_CODES.DB_ERROR,
-                message: '로그인 후 이용해주세요.'
+                code: ERROR_CODES.VALIDATION_ERROR,
+                message: '맛집 이름과 주소는 필수 입력사항입니다.'
             }
         }
-        return {
-            code:ERROR_CODES.SUCCESS,
-            message:'등록되었습니다.'
+
+        // 이미지 URL 배열 처리
+        let imageUrls: string[] = [];
+        try {
+            if (imagesStr && imagesStr !== '[]') {
+                // JSON 문자열을 파싱하여 URL 배열 가져오기
+                imageUrls = JSON.parse(imagesStr);
+            }
+        } catch (err) {
+            console.error("이미지 URL 파싱 오류:", err);
+            // 파싱 오류가 있더라도 계속 진행
         }
-    }catch(error){
+
+        // store 테이블에 데이터 삽입
+        const { data, error } = await supabase
+            .from('store')
+            .insert({
+                name: name,
+                address: address,
+                tag: 'res',
+                detail: contents,
+                images: JSON.stringify(imageUrls), // URL 배열을 JSON 문자열로 저장
+                mainimage: mainImage || null,     // 메인 이미지 URL 저장
+                star: rating,
+                user_id: user.id
+            })
+            .select('id')
+            .single();
+
+        if (error) {
+            console.error("DB 저장 오류:", error);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '맛집 등록중 오류가 발생했습니다'
+            }
+        }
+
         return {
-            code:ERROR_CODES.SERVER_ERROR,
-            message:'에러가 발생하였습니다.'
+            code: ERROR_CODES.SUCCESS,
+            message: '맛집이 등록되었습니다.',
+        }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error
+            ? error.message
+            : '알 수 없는 오류가 발생했습니다';
+
+        console.error("서버 오류:", errorMessage);
+        return {
+            code: ERROR_CODES.SERVER_ERROR,
+            message: '서버 오류가 발생했습니다.'
         }
     }
 }
