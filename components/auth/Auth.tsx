@@ -11,14 +11,14 @@ async function Auth() {
         return (
             <div className={'flex flex-row items-center gap-2 font-jmt text-sm lg:text-lg'}>
                 <Link href={'/login?isOpen=true'}>로그인</Link>
-                <Menu/>
+                <Menu user={null}/>
             </div>
         );
     }else{
         return (
             <div className={'flex flex-row items-center gap-2'}>
                 <MyProfile user={user}/>
-                <Menu/>
+                <Menu user={user}/>
             </div>
         )
     }

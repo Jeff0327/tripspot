@@ -12,7 +12,9 @@ export async function getRestaurant(searchTerm?: string): Promise<StoreWithRevie
         let query = supabase
             .from('store')
             .select('*')
-            .eq('tag', 'res');
+            .eq('tag', 'res')
+            .order('like', { ascending: false })
+
 
         // 검색어가 있는 경우 name 또는 desc에서 검색
         if (searchTerm) {

@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import {FaStar} from "react-icons/fa";
+import {FaHeart, FaStar} from "react-icons/fa";
 import CountUp from "react-countup";
 import {
     Accordion,
@@ -141,6 +141,8 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                     </div>
                                     <div className="w-1/2 mx-auto font-jmt">{food.desc && food.desc.length>10 ? `${food.desc.slice(0,26)}...` : food.desc || ''}</div>
                                     <div className="flex flex-row items-center gap-1">
+                                        <FaHeart className="text-red-500" />
+                                        <CountUp end={food.like ?? 0} className={'font-study'}/>
                                         <FaStar className="w-4 h-4 text-yellow-300"/>
                                         <CountUp className="font-study" end={food.star || 0} duration={3} decimals={1}
                                                  decimal="."/>
