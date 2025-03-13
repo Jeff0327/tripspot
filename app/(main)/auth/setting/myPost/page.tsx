@@ -20,7 +20,7 @@ async function Page() {
     if (!result.success || !result.data) {
         return (
             <div className="py-8 px-4">
-                <h1 className="text-2xl font-bold mb-4">내가 등록한 가게</h1>
+                <h1 className="text-xl font-bold mb-4">내 포스트</h1>
                 <div className="p-4 bg-red-50 text-red-600 rounded-md">
                     {result.error || "데이터를 불러오는데 실패했습니다."}
                 </div>
@@ -32,7 +32,7 @@ async function Page() {
 
     return (
         <div className="py-8 px-4">
-            <h1 className="text-2xl font-bold mb-6">내가 등록한 가게</h1>
+            <h1 className="text-xl font-bold mb-6">내 포스트</h1>
 
             {!data || data.length === 0 ? (
                 <div className="text-center py-10">
@@ -41,7 +41,7 @@ async function Page() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {data.map((store) => (
-                        <Link key={store.id} href={`/food/${store.id}`}>
+                        <Link key={store.id} href={`/auth/setting/myPost/${store.id}`}>
                             <div className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow h-full">
                                 <div className="relative h-48 w-full bg-gray-100">
                                     {store.mainimage ? (

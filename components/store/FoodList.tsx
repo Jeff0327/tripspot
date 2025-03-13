@@ -1,6 +1,6 @@
 'use client'
-import React from 'react';
-import {FaHeart, FaStar} from "react-icons/fa";
+import React, {useState} from 'react';
+import {FaHeart, FaStar, FaRegBookmark, FaBookmark, FaRegUserCircle, FaPlus} from "react-icons/fa";
 import CountUp from "react-countup";
 import {
     Accordion,
@@ -9,18 +9,69 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from "next/image";
-import Script from "next/script";
 import {User} from "@supabase/auth-js";
 import useAlert from "@/lib/notiflix/useAlert";
 import {useRouter} from "next/navigation";
 import {formatDistanceToNow} from 'date-fns';
 import {ko} from 'date-fns/locale';
 import {Review, StoreWithReviews} from "@/lib/types";
-import { FaRegUserCircle } from "react-icons/fa";
-import { FaPlus } from "react-icons/fa";
-function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User | null }) {
+import {addToLikes, removeFromLikes} from "@/app/(main)/food/actions";
+
+function FoodList({storeList, user, userLikes = []}: {
+    storeList: StoreWithReviews[];
+    user: User | null;
+    userLikes?: string[];
+}) {
     const {notify} = useAlert();
     const router = useRouter();
+    const [likedStores, setLikedStores] = useState<Set<string>>(new Set(userLikes));
+    const [loadingLikes, setLoadingLikes] = useState<Record<string, boolean>>({});
+
+    // 좋아요 토글 함수
+    const toggleLike = async (e: React.MouseEvent, storeId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            return notify.info('로그인 후 이용해주세요.');
+        }
+
+        setLoadingLikes(prev => ({...prev, [storeId]: true}));
+
+        try {
+            // 현재 좋아요 상태에 따라 추가 또는 제거
+            if (likedStores.has(storeId)) {
+                const result = await removeFromLikes(storeId);
+                if (result.success) {
+                    setLikedStores(prev => {
+                        const next = new Set(prev);
+                        next.delete(storeId);
+                        return next;
+                    });
+                    notify.success('찜 목록에서 제거했습니다');
+                } else {
+                    notify.failure(result.error || '오류가 발생했습니다');
+                }
+            } else {
+                const result = await addToLikes(storeId);
+                if (result.success) {
+                    setLikedStores(prev => {
+                        const next = new Set(prev);
+                        next.add(storeId);
+                        return next;
+                    });
+                    notify.success('찜 목록에 추가했습니다');
+                } else {
+                    notify.failure(result.error || '오류가 발생했습니다');
+                }
+            }
+        } catch (error) {
+            console.error('좋아요 처리 중 오류:', error);
+            notify.failure('처리 중 오류가 발생했습니다');
+        } finally {
+            setLoadingLikes(prev => ({...prev, [storeId]: false}));
+        }
+    };
 
     const handleReview = (id: string) => {
         if (!user) {
@@ -28,7 +79,8 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
         }
         router.push(`/food/write/${id}`);
     };
-    const handleCreateStore=()=>{
+
+    const handleCreateStore = () => {
         if (!user) {
             return notify.info('로그인 후 이용해주세요.');
         }
@@ -69,7 +121,8 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                         unoptimized={true}
                                     />
                                 ) : (
-                                    <div className="w-8 h-8 bg-white rounded-full"><FaRegUserCircle  className={'w-full h-full'}/></div>
+                                    <div className="w-8 h-8 bg-white rounded-full"><FaRegUserCircle
+                                        className={'w-full h-full'}/></div>
                                 )}
                                 <span className="font-medium">{review.user?.user_metadata?.name || '익명'}</span>
                             </div>
@@ -91,7 +144,8 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                             <span className="ml-1 text-sm">({review.rating})</span>
                         </div>
 
-                        <div className="review-content prose max-w-none" dangerouslySetInnerHTML={{__html: review.content}}/>
+                        <div className="review-content prose max-w-none"
+                             dangerouslySetInnerHTML={{__html: review.content}}/>
 
                         {review.images && review.images.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2">
@@ -122,9 +176,9 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                 <Accordion type="single" collapsible>
                     {storeList.map((food) => (
                         <AccordionItem className="border-none" key={food.id} value={food.name}>
-                            <AccordionTrigger className="border rounded-lg gap-1 border-gray-700 py-2 mb-1">
+                            <AccordionTrigger className="relative border rounded-lg gap-1 border-gray-700 py-2 mb-1 shadow-lg">
                                 <div className="flex justify-between p-2 items-center rounded-lg w-full">
-                                    <div className="flex flex-row items-center gap-2 w-1/2">
+                                    <div className="flex flex-row items-center gap-2 w-full mr-2">
                                         {food.mainimage ? (
                                             <Image
                                                 width={150}
@@ -135,23 +189,43 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                                                 className="w-[50px] h-[50px] rounded-lg object-cover"
                                             />
                                         ) : (
-                                            <div className="w-[50px] h-[50px] bg-gray-200 rounded-lg"></div>
+                                            <div
+                                                className="w-[50px] h-[50px] bg-gray-200 rounded-lg min-w-[50px]"></div>
                                         )}
-                                        <div className="font-jalnan">{food.name && food.name.length>10 ? `${food.name.slice(0,10)}...` : food.name}</div>
+                                        <div className={'flex flex-col w-full'}>
+                                            <div
+                                                className="font-jalnan">{food.name && food.name.length > 16 ? `${food.name.slice(0, 16)}...` : food.name}</div>
+                                            <div
+                                                className="font-jmt w-full">{food.desc && food.desc.length > 30 ? `${food.desc.slice(0, 30)}...` : food.desc || ''}</div>
+                                        </div>
                                     </div>
-                                    <div className="w-1/2 mx-auto font-jmt">{food.desc && food.desc.length>10 ? `${food.desc.slice(0,26)}...` : food.desc || ''}</div>
                                     <div className="flex flex-row items-center gap-1">
-                                        <FaHeart className="text-red-500" />
+                                        <FaHeart className="text-red-500"/>
                                         <CountUp end={food.like ?? 0} className={'font-study'}/>
                                         <FaStar className="w-4 h-4 text-yellow-300"/>
-                                        <CountUp className="font-study" end={food.star || 0} duration={3} decimals={1}
+                                        <CountUp className="font-study" end={food.star || 0} duration={3}
+                                                 decimals={1}
                                                  decimal="."/>
                                     </div>
+                                    {/*<div*/}
+                                    {/*    role="button"*/}
+                                    {/*    onClick={(e) => toggleLike(e, food.id)}*/}
+                                    {/*    aria-label={likedStores.has(food.id) ? "찜취소" : "찜하기"}*/}
+                                    {/*    className="absolute top-2 right-2 z-10 cursor-pointer flex items-center"*/}
+                                    {/*>*/}
+                                    {/*    {likedStores.has(food.id) ? (*/}
+                                    {/*        <FaBookmark className="text-red-500 text-lg"/>*/}
+                                    {/*    ) : (*/}
+                                    {/*        <FaRegBookmark className="text-red-500 text-lg"/>*/}
+                                    {/*    )}*/}
+                                    {/*</div>*/}
                                 </div>
+
                             </AccordionTrigger>
                             <AccordionContent>
                                 {food.detail ? (
-                                    <div dangerouslySetInnerHTML={{__html: food.detail}} className="prose max-w-none mb-4"/>
+                                    <div dangerouslySetInnerHTML={{__html: food.detail}}
+                                         className="prose max-w-none mb-2 border rounded-lg p-2"/>
                                 ) : (
                                     <div className={'mb-2'}>
                                         <div
@@ -175,7 +249,12 @@ function FoodList({storeList, user}: { storeList: StoreWithReviews[]; user: User
                     ))}
                 </Accordion>
             </div>
-            <button onClick={()=>handleCreateStore()} className={'flex flex-row items-center gap-1 fixed bottom-20 right-2 bg-sky-300 rounded-full px-7 py-3 text-white text-sm'}>등록하기<FaPlus /></button>
+            <button
+                onClick={() => handleCreateStore()}
+                className={'flex flex-row items-center gap-1 fixed bottom-20 right-2 bg-sky-300 rounded-full px-7 py-3 text-white text-sm'}
+            >
+                등록하기<FaPlus/>
+            </button>
         </>
     );
 }

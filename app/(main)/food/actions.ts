@@ -252,19 +252,24 @@ export async function addStore(formData: FormData): Promise<FormState> {
     try {
         // 폼 데이터에서 필드 추출
         const name = formData.get('name') as string;
+        const desc = formData.get('desc') as string;
         const address = formData.get('address') as string;
+        const addressDetail = formData.get('addressDetail') as string;
         const contents = formData.get('contents') as string;
-        const imagesStr = formData.get('images') as string;
         const mainImage = formData.get('mainImage') as string;
+        const imagesStr = formData.get('images') as string;
         const rating = parseFloat(formData.get('rating') as string) || 0;
 
         // 필수 필드 유효성 검사
-        if (!name || !address) {
+        if (!name || !address || !desc) {
             return {
                 code: ERROR_CODES.VALIDATION_ERROR,
                 message: '맛집 이름과 주소는 필수 입력사항입니다.'
             }
         }
+
+        // 전체 주소 구성 (기본 주소 + 상세 주소)
+        const fullAddress = addressDetail ? `${address}, ${addressDetail}` : address;
 
         // 이미지 URL 배열 처리
         let imageUrls: string[] = [];
@@ -283,11 +288,12 @@ export async function addStore(formData: FormData): Promise<FormState> {
             .from('store')
             .insert({
                 name: name,
-                address: address,
+                address: fullAddress,
+                desc:desc,
                 tag: 'res',
                 detail: contents,
                 images: JSON.stringify(imageUrls), // URL 배열을 JSON 문자열로 저장
-                mainimage: mainImage || null,     // 메인 이미지 URL 저장
+                mainimage: mainImage || null,
                 star: rating,
                 user_id: user.id
             })
@@ -316,5 +322,168 @@ export async function addStore(formData: FormData): Promise<FormState> {
             code: ERROR_CODES.SERVER_ERROR,
             message: '서버 오류가 발생했습니다.'
         }
+    }
+}
+
+export async function addToLikes(storeId: string) {
+    const supabase = await createClient();
+
+    // 현재 로그인한 사용자 정보 가져오기
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+        return {
+            success: false,
+            error: '로그인이 필요합니다.'
+        };
+    }
+
+    try {
+        // 현재 사용자의 likes 배열 가져오기
+        const { data: userData, error: fetchError } = await supabase
+            .from('users')
+            .select('likes')
+            .eq('id', user.id)
+            .single();
+
+        if (fetchError) {
+            console.error('사용자 데이터 조회 오류:', fetchError);
+            return {
+                success: false,
+                error: '사용자 정보를 가져오는 중 오류가 발생했습니다.'
+            };
+        }
+
+        // 현재 likes 배열
+        const currentLikes = userData.likes || [];
+
+        // 이미 찜한 가게인지 확인
+        if (currentLikes.includes(storeId)) {
+            return {
+                success: true,
+                message: '이미 찜한 가게입니다.'
+            };
+        }
+
+        // 찜 목록에 가게 ID 추가
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({
+                likes: [...currentLikes, storeId],
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+        if (updateError) {
+            console.error('찜 목록 업데이트 오류:', updateError);
+            return {
+                success: false,
+                error: '찜 목록 업데이트 중 오류가 발생했습니다.'
+            };
+        }
+
+        // 가게의 like 카운트 증가
+        const { error: incrementError } = await supabase.rpc('increment_store_like', {
+            store_id: storeId
+        });
+
+        if (incrementError) {
+            console.error('좋아요 증가 오류:', incrementError);
+            // 좋아요 증가 실패해도 찜 목록 추가는 성공으로 처리
+        }
+
+        return {
+            success: true,
+            message: '찜 목록에 추가되었습니다.'
+        };
+    } catch (error) {
+        console.error('찜 추가 중 오류:', error);
+        return {
+            success: false,
+            error: '서버 오류가 발생했습니다.'
+        };
+    }
+}
+
+/**
+ * 사용자의 찜 목록에서 가게를 제거하는 함수
+ */
+export async function removeFromLikes(storeId: string) {
+    const supabase = await createClient();
+
+    // 현재 로그인한 사용자 정보 가져오기
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+        return {
+            success: false,
+            error: '로그인이 필요합니다.'
+        };
+    }
+
+    try {
+        // 현재 사용자의 likes 배열 가져오기
+        const { data: userData, error: fetchError } = await supabase
+            .from('users')
+            .select('likes')
+            .eq('id', user.id)
+            .single();
+
+        if (fetchError) {
+            console.error('사용자 데이터 조회 오류:', fetchError);
+            return {
+                success: false,
+                error: '사용자 정보를 가져오는 중 오류가 발생했습니다.'
+            };
+        }
+
+        // 현재 likes 배열
+        const currentLikes = userData.likes || [];
+
+        // 이미 찜한 가게가 아닌지 확인
+        if (!currentLikes.includes(storeId)) {
+            return {
+                success: true,
+                message: '찜 목록에 없는 가게입니다.'
+            };
+        }
+
+        // 찜 목록에서 가게 ID 제거
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({
+                likes: currentLikes.filter(id => id !== storeId),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+        if (updateError) {
+            console.error('찜 목록 업데이트 오류:', updateError);
+            return {
+                success: false,
+                error: '찜 목록 업데이트 중 오류가 발생했습니다.'
+            };
+        }
+
+        // 가게의 like 카운트 감소
+        const { error: decrementError } = await supabase.rpc('decrement_store_like', {
+            store_id: storeId
+        });
+
+        if (decrementError) {
+            console.error('좋아요 감소 오류:', decrementError);
+            // 좋아요 감소 실패해도 찜 목록 제거는 성공으로 처리
+        }
+
+        return {
+            success: true,
+            message: '찜 목록에서 제거되었습니다.'
+        };
+    } catch (error) {
+        console.error('찜 제거 중 오류:', error);
+        return {
+            success: false,
+            error: '서버 오류가 발생했습니다.'
+        };
     }
 }

@@ -1,23 +1,25 @@
 'use client'
-import React, { useRef, useState } from 'react';
-import FormContainer, { FormState } from "@/components/ui/form";
-import { CustomInput } from "@/components/ui/CustomInput";
-import { addStore } from "@/app/(main)/food/actions";
-import { ERROR_CODES } from "@/utils/errorMessage";
-import { useRouter } from "next/navigation";
-import useAlert from "@/lib/notiflix/useAlert";
-import StarRating from "@/utils/review/StarRating";
-import Editor from "@/lib/editor/Editor";
-import Image from "next/image";
+import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import useAlert from '@/lib/notiflix/useAlert';
+import Image from 'next/image';
+import FormContainer, { FormState } from '@/components/ui/form';
+import { CustomInput } from '@/components/ui/CustomInput';
+import StarRating from '@/utils/review/StarRating';
+import Editor from '@/lib/editor/Editor';
+import { updatePost, deletePost } from '@/app/(main)/auth/setting/myPost/[id]/actions';
+import { ERROR_CODES } from '@/utils/errorMessage';
+import { Store } from "@/lib/types";
 import AddressSearch from "@/utils/address/AddressSearch";
 
-function CreateStore() {
-    const { notify } = useAlert();
+function EditPostForm({ post }: { post: Store }) {
     const router = useRouter();
-    const [rating, setRating] = useState(3);
-    const [mainImage, setMainImage] = useState('');
-    const [previewImage, setPreviewImage] = useState('');
-    const [address, setAddress] = useState('');
+    const { notify } = useAlert();
+    const [rating, setRating] = useState(post.star || 3);
+    const [mainImage, setMainImage] = useState(post.mainimage || '');
+    const [previewImage, setPreviewImage] = useState(post.mainimage || '');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [address, setAddress] = useState(post.address || '');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleRatingChange = (newRating: number) => {
@@ -36,11 +38,13 @@ function CreateStore() {
             // 미리보기 이미지 설정
             const reader = new FileReader();
             reader.onload = (event) => {
-                setPreviewImage(event.target?.result as string);
+                if (event.target?.result) {
+                    setPreviewImage(event.target.result as string);
+                }
             };
             reader.readAsDataURL(file);
 
-            // 이미지 업로드 요청
+            // 이미지 업로드 API 호출
             const formData = new FormData();
             formData.append('files[0]', file);
 
@@ -50,12 +54,11 @@ function CreateStore() {
             });
 
             const result = await response.json();
-
-            if (result.success && result.data) {
+            if (result.success) {
                 setMainImage(result.data);
                 notify.success('대표 이미지가 업로드되었습니다.');
             } else {
-                console.error("업로드 실패:", result.error || "알 수 없는 오류");
+                console.error("업로드 실패:", result.error);
                 notify.failure('이미지 업로드 실패: ' + (result.error || "알 수 없는 오류"));
             }
         } catch (error) {
@@ -64,10 +67,35 @@ function CreateStore() {
         }
     };
 
+    const handleDelete = async () => {
+        if (isDeleting) return;
+
+        const confirmed = window.confirm('정말로 이 포스트를 삭제하시겠습니까?');
+        if (!confirmed) return;
+
+        setIsDeleting(true);
+        try {
+            const result = await deletePost(post.id);
+            if (result.success) {
+                notify.success('포스트가 삭제되었습니다.');
+                router.push('/auth/setting/myPost');
+                router.refresh(); // 목록 페이지 갱신
+            } else {
+                notify.failure(result.error || '삭제 중 오류가 발생했습니다.');
+            }
+        } catch (error) {
+            notify.failure('삭제 처리 중 오류가 발생했습니다.');
+            console.error('Delete error:', error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const handleResult = (formState: FormState) => {
         if (formState.code === ERROR_CODES.SUCCESS) {
-            notify.success('가게가 성공적으로 등록되었습니다.');
-            router.push('/food'); // 가게 목록 페이지로 이동
+            notify.success('포스트가 성공적으로 수정되었습니다.');
+            router.push('/auth/setting/myPost');
+            router.refresh(); // 목록 페이지 새로고침
         } else {
             notify.failure(formState.message);
         }
@@ -75,11 +103,17 @@ function CreateStore() {
 
     return (
         <FormContainer
-            action={addStore}
+            action={updatePost}
             onResult={handleResult}
         >
-            <div className="space-y-4 mb-6">
-                {/* 가게 이름 - 필수 */}
+            {/* 포스트 ID (hidden) */}
+            <input type="hidden" name="id" value={post.id} />
+
+            {/* 주소 Hidden 필드 */}
+            <input type="hidden" name="address" value={address} />
+
+            <div className="space-y-6 bg-white rounded-lg">
+                {/* 가게 이름 */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                         가게 이름 <span className="text-red-500">*</span>
@@ -87,6 +121,7 @@ function CreateStore() {
                     <CustomInput
                         name="name"
                         type="text"
+                        defaultValue={post.name}
                         placeholder="가게 이름을 입력해주세요"
                         required
                         className="w-full"
@@ -99,18 +134,17 @@ function CreateStore() {
                     <CustomInput
                         name="desc"
                         type="text"
+                        defaultValue={post.name}
                         placeholder="가게 특징을 입력해주세요"
                         required
                         className="w-full"
                     />
                 </div>
-                {/* 주소 컴포넌트 */}
+                {/* 주소 검색 컴포넌트 */}
                 <AddressSearch
+                    defaultAddress={post.address}
                     onAddressChange={handleAddressChange}
                 />
-
-                {/* 숨겨진 주소 필드 */}
-                <input type="hidden" name="address" value={address}/>
 
                 {/* 대표 이미지 업로드 */}
                 <div>
@@ -161,17 +195,14 @@ function CreateStore() {
                     </div>
                 </div>
 
-                {/* 태그 - 선택 */}
-                <div>
-                    <CustomInput
-                        name="tag"
-                        type="hidden"
-                        value={'res'}
-                        className="w-full"
-                    />
-                </div>
+                {/* 태그 - hidden */}
+                <CustomInput
+                    name="tag"
+                    type="hidden"
+                    value={post.tag || 'res'}
+                />
 
-                {/* 평점 제목 */}
+                {/* 평점 */}
                 <div>
                     <input type="hidden" name="rating" value={rating}/>
                     <label className="block text-sm font-medium text-gray-700">
@@ -182,18 +213,48 @@ function CreateStore() {
                         onRatingChange={handleRatingChange}
                     />
                 </div>
+
+                {/* 상세 내용 */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        상세 내용
+                    </label>
+                    <Editor
+                        name="contents"
+                        defaultValue={post.detail || ''}
+                    />
+                </div>
+
+                {/* 버튼 영역 */}
+                <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className={`px-4 py-2 bg-black text-white rounded-md hover:bg-red-600 transition-colors ${
+                            isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                    >
+                        {isDeleting ? '삭제 중...' : '삭제하기'}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => router.push('/auth/setting/myPost')}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                        취소
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                        수정 완료
+                    </button>
+                </div>
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    맛집 내용
-                </label>
-                <Editor name={'contents'}/>
-            </div>
-            <button className={'flex w-full justify-center items-center py-3 bg-sky-300 my-2 text-white'}
-                    type={'submit'}>등록하기
-            </button>
         </FormContainer>
     );
 }
 
-export default CreateStore;
+export default EditPostForm;

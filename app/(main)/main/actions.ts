@@ -8,47 +8,60 @@ export async function randomPlace(): Promise<Store[] | null> {
         const { data, error } = await supabase
             .rpc('random_store_res');
 
+        console.log('Random store res data:', data);
+        console.log('Random store res error:', error);
+
         if (error) {
-            return null
+            console.error('Error fetching random store:', error.message);
+            return null;
         }
 
-        if (!data) {
-            console.log('No data found in store table')
-            return null
+        if (!data || data.length === 0) {
+            console.log('No data found for random_store_res');
+            return null;
         }
 
-        return (data || []).map(store => ({
+        return Array.isArray(data) ? data.map(store => ({
             ...store,
-            images: store.images && store.images.length > 0 ? JSON.parse(store.images) : []
-        }));
+            images: store.images && typeof store.images === 'string'
+                ? JSON.parse(store.images)
+                : []
+        })) : [data];
 
     } catch (error) {
-        console.error('Unexpected error in randomPlace:', error)
-        return null
+        console.error('Unexpected error in randomPlace:', error);
+        return null;
     }
 }
+
 export async function randomHotel(): Promise<Store[] | null> {
     const supabase = await createClient()
     try {
         const { data, error } = await supabase
             .rpc('random_store_hotel');
 
+        console.log('Random hotel data:', data);
+        console.log('Random hotel error:', error);
+
         if (error) {
-            return null
+            console.error('Error fetching random hotel:', error.message);
+            return null;
         }
 
-        if (!data) {
-            console.log('No data found in store table')
-            return null
+        if (!data || data.length === 0) {
+            console.log('No data found for random_store_hotel');
+            return null;
         }
 
-        return (data || []).map(store => ({
+        return Array.isArray(data) ? data.map(store => ({
             ...store,
-            images: store.images && store.images.length > 0 ? JSON.parse(store.images) : []
-        }));
+            images: store.images && typeof store.images === 'string'
+                ? JSON.parse(store.images)
+                : []
+        })) : [data];
 
     } catch (error) {
-        console.error('Unexpected error in randomPlace:', error)
-        return null
+        console.error('Unexpected error in randomHotel:', error);
+        return null;
     }
 }

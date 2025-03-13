@@ -35,3 +35,44 @@ export interface States<T=unknown> {
     data: T | null;
     error: string | null;
 }
+// types/daum-postcode.d.ts
+export interface DaumPostcodeData {
+    address: string;
+    addressType: string;
+    buildingName: string;
+    apartment?: string;
+    zonecode: string;
+    jibunAddress?: string;
+    roadAddress?: string;
+    autoJibunAddress?: string;
+    autoRoadAddress?: string;
+    userSelectedType?: string;
+    bname?: string;
+    bcode?: string;
+}
+
+export interface DaumPostcode {
+    open: () => void;
+}
+
+export interface DaumPostcodeOptions {
+    oncomplete: (data: DaumPostcodeData) => void;
+    onresize?: (size: { width: number; height: number }) => void;
+    onclose?: () => void;
+    width?: string | number;
+    height?: string | number;
+    animation?: boolean;
+    focusInput?: boolean;
+    autoMapping?: boolean;
+}
+
+export interface DaumPostcodeInstance {
+    Postcode: new (options: DaumPostcodeOptions) => DaumPostcode;
+}
+
+// Window 인터페이스 확장
+declare global {
+    interface Window {
+        daum: DaumPostcodeInstance;
+    }
+}
