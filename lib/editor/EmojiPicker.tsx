@@ -66,7 +66,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
                     <Button
                         variant="ghost"
                         className="rounded-none h-full border-r-[0.8px] border-gray-300 hover:text-sub text-gray-300"
-                        onClick={(e) => {e.preventDefault(); setSelectedCategory(prev => Math.max(0, prev - 1))}}
+                        onClick={()=>setShow(false)}
                     >
                         <ChevronLeftIcon className="h-5 w-5 stroke-[3px]" />
                     </Button>
@@ -81,13 +81,6 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
                             {category.emojis[0]}
                         </button>
                     ))}
-                    <Button
-                        variant="ghost"
-                        className="rounded-none h-full border-l-[0.8px] border-zinc-300"
-                        onClick={(e) => {e.preventDefault(); setSelectedCategory(prev => Math.min(emojiCategories.length - 1, prev + 1))}}
-                    >
-                        <ChevronRightIcon className="h-5 w-5 stroke-[3px]" />
-                    </Button>
                 </div>
             </div>
             <div className="w-full min-h-[320px] max-h-[320px] bg-white overflow-auto">

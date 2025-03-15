@@ -40,7 +40,7 @@ export default function SigninDialog({
                     <DialogTitle>로그인</DialogTitle>
                     <FormContainer action={signin} onResult={handleResult}>
                     <DialogDescription className={'flex flex-col gap-2 justify-center items-center py-8'}>
-                        <CustomInput name={'userId'} type={'text'} placeholder={'아이디를 입력해주세요.'}/>
+                        <CustomInput name={'userId'} type={'text'} placeholder={'아이디를 입력해주세요.'} className={'text-base'}/>
                         <CustomInput name={'userPassword'} type={'password'} placeholder={'비밀번호를 입력해주세요.'}/>
                         <button type={'submit'} className={'bg-black text-white w-full rounded-sm py-2'}>로그인</button>
                     </DialogDescription>

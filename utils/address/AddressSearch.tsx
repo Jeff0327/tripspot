@@ -118,9 +118,9 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ defaultAddress = '', onAd
                     <button
                         type="button"
                         onClick={handleAddressSearch}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                        className="w-24 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-semibold"
                     >
-                        주소 검색
+                        주소 찾기
                     </button>
                 </div>
             </div>

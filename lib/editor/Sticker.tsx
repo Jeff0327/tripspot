@@ -75,9 +75,7 @@ const StickerHover: React.FC<StickerHoverProps> = ({
                 <div className="flex items-center h-full w-full overflow-auto no-scrollbar">
                     <Button variant={'ghost'}
                             className="rounded-none h-full border-r-[0.8px] border-gray-300 hover:text-sub te text-gray-300"
-                            onClick={(e) => {
-                                e.preventDefault()
-                            }}>
+                            onClick={()=>setShow(false)}>
                         <ChevronLeftIcon className="h-5 w-5 stroke-[3px]"/>
                     </Button>
                     {Array.from({length: stickerData.length}, (_, index) => (
@@ -101,12 +99,6 @@ const StickerHover: React.FC<StickerHoverProps> = ({
                         </button>
                     ))}
                 </div>
-                <Button variant={'ghost'} className="rounded-none h-full border-l-[0.8px] border-zinc-300"
-                        onClick={(e) => {
-                            e.preventDefault()
-                        }}><ChevronRightIcon className="h-5 w-5 text-zinc-300 stroke-[3px]"/>
-                    <ChevronRightIcon className="h-5 w-5 stroke-[3px]"/>
-                </Button>
             </div>
             <div className="w-full h-[320px] bg-white overflow-y-auto">
                 <div className="flex flex-wrap gap-2 p-4 justify-start">

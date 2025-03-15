@@ -16,6 +16,7 @@ import {formatDistanceToNow} from 'date-fns';
 import {ko} from 'date-fns/locale';
 import {Review, StoreWithReviews} from "@/lib/types";
 import {addToLikes, removeFromLikes} from "@/app/(main)/food/actions";
+import KakaoMap from "@/utils/address/map/Kakaomap";
 
 function FoodList({storeList, user, userLikes = []}: {
     storeList: StoreWithReviews[];
@@ -239,7 +240,10 @@ function FoodList({storeList, user, userLikes = []}: {
                                         <div className="p-2 text-sm bg-gray-50">주소: {food.address}</div>
                                     </div>
                                 </div>
-
+                                {/*지도 섹션 */}
+                                {food.address && (
+                                    <KakaoMap address={food.address} />
+                                )}
                                 {/* 리뷰 섹션 */}
                                 <div>
                                     {renderReviews(food.id, food.reviews || [])}

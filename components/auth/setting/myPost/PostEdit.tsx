@@ -134,7 +134,7 @@ function EditPostForm({ post }: { post: Store }) {
                     <CustomInput
                         name="desc"
                         type="text"
-                        defaultValue={post.name}
+                        defaultValue={post.desc || ''}
                         placeholder="가게 특징을 입력해주세요"
                         required
                         className="w-full"

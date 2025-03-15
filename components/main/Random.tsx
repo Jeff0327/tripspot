@@ -21,8 +21,9 @@ function RandomAria({randomData,randomHotelData}: { randomData: Store[] | null; 
                                     className={'w-full h-full rounded-lg max-h-[20vh] lg:max-h-[30vh]'}
                                 />
                             )}
-                            <div className={'flex flex-col font-jmt text-md rounded bg-yellow-600 text-white px-2'}>
-                                <span>가게명:{item.name}</span>
+                            <div className={'flex flex-col font-jmt text-md rounded bg-[#FEFFED] text-black/90 px-2'}>
+                                <span>가게명: {item.name}</span>
+                                <span>특징: {item.desc}</span>
                                 <span>주소: {item.address}</span>
                             </div>
                         </div>
