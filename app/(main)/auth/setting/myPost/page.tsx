@@ -31,7 +31,7 @@ async function Page() {
     const data = result.data;
 
     return (
-        <div className="py-8 px-4">
+        <div className="py-8 px-4 lg:mt-[6vh]">
             <h1 className="text-xl font-bold mb-6">내 포스트</h1>
 
             {!data || data.length === 0 ? (
