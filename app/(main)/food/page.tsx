@@ -3,6 +3,7 @@ import FoodList from "@/components/store/FoodList";
 import {getRestaurant} from "@/app/(main)/food/actions";
 import SearchInput from "@/components/layout/search/SearchInput";
 import {createClient} from "@/utils/supabase/server";
+import SearchFood from "@/utils/address/search/SearchFood";
 
 async function Page({
                         searchParams

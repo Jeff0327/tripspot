@@ -127,7 +127,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({ address }) => {
 
         // 지도 초기화 함수
         const initMap = () => {
-            if (!mapRef.current) return;
+            if (!mapRef.current || !address) return;
 
             try {
                 console.log('지도 초기화 시작');
@@ -165,7 +165,6 @@ const KakaoMap: React.FC<KakaoMapProps> = ({ address }) => {
                         map.setCenter(coords);
                         console.log('지도 위치 설정 완료');
                     } else {
-                        console.error('주소를 찾을 수 없습니다:', address);
                         setError('주소를 찾을 수 없습니다');
                     }
 

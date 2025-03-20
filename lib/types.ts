@@ -76,3 +76,38 @@ declare global {
         daum: DaumPostcodeInstance;
     }
 }
+export interface SearchResult {
+    success: boolean;
+    message?: string;
+    data?: Store[]; // 이제 API 응답에도 addressVerified 필드가 있을 수 있음
+}
+
+export interface ImportResult {
+    success: boolean;
+    message: string;
+    details?: {
+        success: Array<{ name: string; message: string }>;
+        failed: Array<{ name: string; error: string }>;
+    };
+}
+
+export interface AutomationConfig {
+    enabled: boolean;
+    interval: number; // 분 단위
+    searchTerms: string[];
+    maxResults: number;
+    currentTermIndex: number;
+    importDelay: number; // 초 단위
+    verifyAddressAutomatically: boolean; // 주소 자동 검증 여부
+}
+
+export interface KakaoMapResult {
+    success: boolean;
+    message?: string;
+    data?: {
+        address: string;
+        roadAddress?: string;
+        placeName?: string;
+        placeId?: string;
+    };
+}

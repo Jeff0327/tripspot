@@ -14,8 +14,10 @@ import {User} from "@supabase/auth-js";
 import useAlert from "@/lib/notiflix/useAlert";
 import {useRouter} from "next/navigation";
 import {IoIosArrowForward} from "react-icons/io";
-import { BsFillSignpostFill } from "react-icons/bs";
-import { VscAccount } from "react-icons/vsc";
+import {BsFillSignpostFill} from "react-icons/bs";
+import {VscAccount} from "react-icons/vsc";
+import {IoSettingsSharp} from "react-icons/io5";
+
 function Menu({user}: { user: User | null }) {
     const [isOpen, setIsOpen] = React.useState(false);
     const {notify} = useAlert()
@@ -38,12 +40,13 @@ function Menu({user}: { user: User | null }) {
                     <SheetDescription className={'flex flex-col gap-2 font-jmt text-lg text-black/70'}>
                         <button className={'flex flex-row items-center w-full justify-between'}
                                 onClick={() => handleMyinfo('/auth/setting/myInfo')}>
-                            <div className={'flex flex-row items-center gap-1'}><VscAccount /><span>내 정보</span></div>
+                            <div className={'flex flex-row items-center gap-1'}><VscAccount/><span>내 정보</span></div>
                             <IoIosArrowForward className={'w-5 h-5'}/>
                         </button>
                         <button className={'flex flex-row items-center w-full justify-between'}
                                 onClick={() => handleMyinfo('/auth/setting/myPost')}>
-                            <div className={'flex flex-row items-center gap-1'}><BsFillSignpostFill/><span>내 포스트</span></div>
+                            <div className={'flex flex-row items-center gap-1'}><BsFillSignpostFill/><span>내 포스트</span>
+                            </div>
                             <IoIosArrowForward className={'w-5 h-5'}/>
                         </button>
                         <button className={'flex flex-row items-center w-full justify-between'}
@@ -51,6 +54,11 @@ function Menu({user}: { user: User | null }) {
                             <div className={'flex flex-row items-center gap-1'}><FaRegHeart/><span>찜 목록</span></div>
                             <IoIosArrowForward className={'w-5 h-5'}/>
                         </button>
+                        {user && user.user_metadata.role === 'admin' &&
+                            <button onClick={() => handleMyinfo('/admin')} className={'flex flex-row items-center w-full justify-between'}>
+                                <div className={'flex flex-row items-center gap-1'}><IoSettingsSharp/><span>관리자 페이지</span></div>
+                                <IoIosArrowForward className={'w-5 h-5'}/>
+                                </button>}
                     </SheetDescription>
                 </SheetHeader>
             </SheetContent>

@@ -68,33 +68,45 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ defaultAddress = '', onAd
             return;
         }
 
-        new window.daum.Postcode({
-            oncomplete: function(data: DaumPostcodeData) {
-                // 사용자가 선택한 주소 정보
-                let fullAddress = data.address;
-                let extraAddress = '';
+        // 명시적으로 window 객체 체크
+        if (!window.daum || !window.daum.Postcode) {
+            console.error('Daum Postcode 객체를 찾을 수 없습니다.');
+            notify.failure('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해보세요.');
+            return;
+        }
 
-                // 법정동/건물명이 있을 경우 추가
-                if (data.buildingName !== '') {
-                    extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName);
+        try {
+            new window.daum.Postcode({
+                oncomplete: function(data: DaumPostcodeData) {
+                    // 사용자가 선택한 주소 정보
+                    let fullAddress = data.address;
+                    let extraAddress = '';
+
+                    // 법정동/건물명이 있을 경우 추가
+                    if (data.buildingName !== '') {
+                        extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+
+                    // 최종 주소 구성
+                    fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+
+                    // 주소 상태 업데이트
+                    setAddress(fullAddress);
+
+                    // 상세 주소 입력란에 포커스
+                    setTimeout(() => {
+                        const detailInput = document.querySelector('input[name="addressDetail"]') as HTMLInputElement;
+                        if (detailInput) detailInput.focus();
+                    }, 100);
+
+                    // 사용자에게 알림
+                    notify.success('주소가 입력되었습니다.');
                 }
-
-                // 최종 주소 구성
-                fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
-
-                // 주소 상태 업데이트
-                setAddress(fullAddress);
-
-                // 상세 주소 입력란에 포커스
-                setTimeout(() => {
-                    const detailInput = document.querySelector('input[name="addressDetail"]') as HTMLInputElement;
-                    if (detailInput) detailInput.focus();
-                }, 100);
-
-                // 사용자에게 알림
-                notify.success('주소가 입력되었습니다.');
-            }
-        }).open();
+            }).open();
+        } catch (error) {
+            console.error('Daum Postcode 실행 오류:', error);
+            notify.failure('주소 검색 중 오류가 발생했습니다.');
+        }
     };
 
     return (
