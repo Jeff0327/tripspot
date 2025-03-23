@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import useAlert from "@/lib/notiflix/useAlert";
 import { AutomationPanel } from './AutomationPanel';
 import { SearchPanel } from './SearchPanel';
-import { RestaurantList } from './RestaurantList';
 import { LogPanel } from './LogPanel';
 import { ResultPanel } from './ResultPanel';
 import {AutomationConfig, ImportResult, KakaoMapResult, Store, SearchResult} from "@/lib/types";
@@ -581,26 +580,6 @@ export default function SearchFood() {
                         verifyAddressAutomatically={automation.verifyAddressAutomatically}
                         handleAutomationChange={handleAutomationChange}
                     />
-
-                    {/* 검색 결과 */}
-                    {restaurants.length > 0 && (
-                        <RestaurantList
-                            restaurants={restaurants}
-                            selectedRestaurants={selectedRestaurants}
-                            editingIndex={editingIndex}
-                            editForm={editForm}
-                            setEditForm={setEditForm}
-                            loading={loading}
-                            handleManualImport={handleManualImport}
-                            toggleSelectAll={toggleSelectAll}
-                            handleCheckboxChange={handleCheckboxChange}
-                            startEdit={startEdit}
-                            saveEdit={saveEdit}
-                            cancelEdit={cancelEdit}
-                            searchRestaurantAddress={searchRestaurantAddress}
-                            verifyAddressAutomatically={automation.verifyAddressAutomatically}
-                        />
-                    )}
 
                     {/* 등록 결과 */}
                     {importResults && (
