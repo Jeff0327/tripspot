@@ -7,10 +7,14 @@ async function Page({searchParams}:{searchParams:Promise<{searchTerms?:string}>}
     const {searchTerms} = await searchParams;
     const data = await getService(searchTerms)
     return (
-        <div>
-            <SearchInput/>
-            <ServiceList serviceList={data || []}/>
-        </div>
+        <>
+            <div className="fixed top-0 lg:top-10 w-full h-[12vh] bg-white z-10">
+                <SearchInput/>
+            </div>
+            <div className="mt-[12vh]">
+                <ServiceList serviceList={data || []}/>
+            </div>
+        </>
     );
 }
 

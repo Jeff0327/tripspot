@@ -9,7 +9,7 @@ async function Page() {
         return null;
     }
     return (
-        <div className="lg:mb-[6vh] lg:mb-0 lg:mt-[10vh]">
+        <div className="lg:mb-[6vh] mb-0 lg:mt-[10vh]">
             <div className="mx-auto">
                 <div className="bg-white rounded-lg p-2">
                     <h1 className="text-2xl font-bold mb-4">맛집 등록</h1>

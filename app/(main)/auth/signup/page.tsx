@@ -1,5 +1,6 @@
 import React from 'react';
 import UserSignupForm from "@/components/auth/signup/UserSignupForm";
+import BossSignupForm from "@/components/auth/signup/BossSignupForm";
 
 async function Page({
                         searchParams
@@ -16,7 +17,7 @@ async function Page({
         )
     }else{
      return (
-         <div>사장님 가입폼</div>
+            <BossSignupForm/>
      )
     }
 }

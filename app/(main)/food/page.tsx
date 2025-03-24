@@ -15,10 +15,14 @@ async function Page({
     const supabase = await createClient()
     const {data:{user}}= await supabase.auth.getUser()
     return (
-        <div>
-            <SearchInput/>
-            <FoodList storeList={data || []} user={user|| null}/>
-        </div>
+        <>
+            <div className="fixed top-0 lg:top-10 w-full h-[12vh] bg-white z-10">
+                <SearchInput/>
+            </div>
+            <div className="mt-[12vh]">
+                <FoodList storeList={data || []} user={user || null}/>
+            </div>
+        </>
     );
 }
 
