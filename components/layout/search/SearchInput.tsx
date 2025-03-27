@@ -41,8 +41,8 @@ function SearchInput() {
     }
 
     return (
-        <div className={'flex p-2 justify-between flex-row items-center w-full h-[5vh] mt-[6vh]'}>
-            <Form action={handleSearch} className={'w-full'}>
+        <div className={'flex p-2 flex-row items-center w-full h-[5vh] mt-[6vh]'}>
+            <Form action={handleSearch} className={'w-full lg:max-w-4xl'}>
                 <div className={'flex px-2 flex-row items-center rounded-lg border w-full'}>
                     <input
                         name={'searchTerm'}

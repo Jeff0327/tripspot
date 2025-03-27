@@ -6,7 +6,7 @@ export async function randomPlace(): Promise<Store[] | null> {
     const supabase = await createClient()
     try {
         const { data, error } = await supabase
-            .rpc('random_store_res');
+            .rpc('random_store_food');
 
         if (error) {
             console.error('Error fetching random store:', error.message);

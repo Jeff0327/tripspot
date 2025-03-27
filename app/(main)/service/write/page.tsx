@@ -9,7 +9,7 @@ async function Page() {
     if(!user){
         return null;
     }
-    const baseUrl='food'
+    const baseUrl='service'
     return (
         <div className="lg:mb-[6vh] mb-0 lg:mt-[10vh]">
             <div className="mx-auto">

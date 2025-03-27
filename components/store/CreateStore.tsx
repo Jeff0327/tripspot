@@ -2,7 +2,6 @@
 import React, { useRef, useState } from 'react';
 import FormContainer, { FormState } from "@/components/ui/form";
 import { CustomInput } from "@/components/ui/CustomInput";
-import { addStore } from "@/app/(main)/food/actions";
 import { ERROR_CODES } from "@/utils/errorMessage";
 import { useRouter } from "next/navigation";
 import useAlert from "@/lib/notiflix/useAlert";
@@ -11,7 +10,13 @@ import Editor from "@/lib/editor/Editor";
 import Image from "next/image";
 import AddressSearch from "@/utils/address/AddressSearch";
 
-function CreateStore() {
+// addStore 액션을 props로 받도록 타입 정의
+interface CreateStoreProps {
+    baseUrl: string;
+    addStoreAction: (formData: FormData) => Promise<FormState>;
+}
+
+function CreateStore({ baseUrl, addStoreAction }: CreateStoreProps) {
     const { notify } = useAlert();
     const router = useRouter();
     const [rating, setRating] = useState(3);
@@ -67,7 +72,7 @@ function CreateStore() {
     const handleResult = (formState: FormState) => {
         if (formState.code === ERROR_CODES.SUCCESS) {
             notify.success('가게가 성공적으로 등록되었습니다.');
-            router.push('/food'); // 가게 목록 페이지로 이동
+            router.push(`/${baseUrl}`); // 가게 목록 페이지로 이동
         } else {
             notify.failure(formState.message);
         }
@@ -75,10 +80,11 @@ function CreateStore() {
 
     return (
         <FormContainer
-            action={addStore}
+            action={addStoreAction} // 이제 props로 받은 액션을 사용합니다
             onResult={handleResult}
         >
             <div className="space-y-4 mb-6">
+                <input name='tag' value={baseUrl} type={'hidden'}/>
                 {/* 가게 이름 - 필수 */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -166,7 +172,7 @@ function CreateStore() {
                     <CustomInput
                         name="tag"
                         type="hidden"
-                        value={'res'}
+                        value={'food'}
                         className="w-full"
                     />
                 </div>

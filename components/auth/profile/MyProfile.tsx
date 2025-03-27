@@ -15,7 +15,7 @@ function MyProfile({user}: { user: User }) {
         //강제 새로고침(간헐적으로 로그인 모달이 뜨지않음) react-dom 문제
         window.location.href = '/main';
     }
-    console.log(user)
+
     return (
         <Popover>
             <PopoverTrigger><FaUserCircle className={'w-5 h-5 lg:w-8 lg:h-8 relative'}/></PopoverTrigger>

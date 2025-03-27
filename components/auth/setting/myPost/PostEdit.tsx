@@ -199,7 +199,7 @@ function EditPostForm({ post }: { post: Store }) {
                 <CustomInput
                     name="tag"
                     type="hidden"
-                    value={post.tag || 'res'}
+                    value={post.tag || 'food'}
                 />
 
                 {/* 평점 */}

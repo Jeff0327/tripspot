@@ -162,7 +162,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      random_store_hotel: {
+      random_store_food: {
         Args: Record<PropertyKey, never>
         Returns: {
           address: string
@@ -182,7 +182,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      random_store_res: {
+      random_store_hotel: {
         Args: Record<PropertyKey, never>
         Returns: {
           address: string

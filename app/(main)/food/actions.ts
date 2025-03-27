@@ -12,7 +12,7 @@ export async function getRestaurant(searchTerm?: string): Promise<StoreWithRevie
         let query = supabase
             .from('store')
             .select('*')
-            .eq('tag', 'res')
+            .eq('tag', 'food')
             .order('like', { ascending: false })
 
 
@@ -258,6 +258,7 @@ export async function addStore(formData: FormData): Promise<FormState> {
         const contents = formData.get('contents') as string;
         const mainImage = formData.get('mainImage') as string;
         const imagesStr = formData.get('images') as string;
+        const tag = formData.get('tag') as string;
         const rating = parseFloat(formData.get('rating') as string) || 0;
 
         // 필수 필드 유효성 검사
@@ -290,7 +291,7 @@ export async function addStore(formData: FormData): Promise<FormState> {
                 name: name,
                 address: fullAddress,
                 desc:desc,
-                tag: 'res',
+                tag: tag,
                 detail: contents,
                 images: JSON.stringify(imageUrls), // URL 배열을 JSON 문자열로 저장
                 mainimage: mainImage || null,

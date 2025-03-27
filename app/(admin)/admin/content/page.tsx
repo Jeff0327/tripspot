@@ -1,11 +1,9 @@
 import React from 'react';
-import SearchFood from "@/utils/address/search/SearchFood";
+import YoutubeSearch from "@/utils/address/search/YoutubeSearch";
 
-function Page() {
+async function Page() {
     return (
-        <div className={'text-black p-2'}>
-        <SearchFood/>
-        </div>
+        <YoutubeSearch/>
     );
 }
 

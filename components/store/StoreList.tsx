@@ -18,9 +18,10 @@ import {Review, StoreWithReviews} from "@/lib/types";
 import {addToLikes, removeFromLikes} from "@/app/(main)/food/actions";
 import KakaoMap from "@/utils/address/map/Kakaomap";
 
-function FoodList({storeList, user, userLikes = []}: {
+function StoreList({storeList, user, baseUrl,userLikes = []}: {
     storeList: StoreWithReviews[];
     user: User | null;
+    baseUrl:string;
     userLikes?: string[];
 }) {
     const {notify} = useAlert();
@@ -78,14 +79,14 @@ function FoodList({storeList, user, userLikes = []}: {
         if (!user) {
             return notify.info('로그인 후 이용해주세요.');
         }
-        router.push(`/food/write/${id}`);
+        router.push(`/${baseUrl}/write/${id}`);
     };
 
     const handleCreateStore = () => {
         if (!user) {
             return notify.info('로그인 후 이용해주세요.');
         }
-        router.push(`/food/write`);
+        router.push(`/${baseUrl}/write`);
     }
 
     // 리뷰 렌더링 함수
@@ -263,4 +264,4 @@ function FoodList({storeList, user, userLikes = []}: {
     );
 }
 
-export default FoodList;
+export default StoreList;
