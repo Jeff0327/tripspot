@@ -2,87 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addStore } from "@/app/(main)/food/actions";
 import { createClient } from "@/utils/supabase/server";
 import { ERROR_CODES } from "@/utils/errorMessage";
-import OpenAI from 'openai';
+import {StoreWithVideoInfo, YouTubeSearchResponse, YouTubeVideoResponse} from "@/lib/types";
+import {
+    extractAddressImproved,
+    extractBusinessHours,
+    extractContact,
+    extractDescription,
+    extractRestaurantName
+} from "@/utils/utils";
 
 // YouTube API 키 (환경 변수로 관리)
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-// OpenAI API 키 (환경 변수로 관리)
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-// OpenAI 클라이언트 초기화
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
-});
-
-// 타입 정의
-interface YouTubeSearchResponse {
-    items: {
-        id: {
-            videoId: string;
-        };
-        snippet: {
-            title: string;
-            description: string;
-            thumbnails: {
-                default?: { url: string; width: number; height: number };
-                medium?: { url: string; width: number; height: number };
-                high?: { url: string; width: number; height: number };
-            };
-        };
-    }[];
-}
-
-interface YouTubeVideoResponse {
-    items: {
-        id: string;
-        snippet: {
-            title: string;
-            description: string;
-            thumbnails: {
-                default?: { url: string; width: number; height: number };
-                medium?: { url: string; width: number; height: number };
-                high?: { url: string; width: number; height: number };
-            };
-        };
-        contentDetails: {
-            duration: string;
-        };
-        statistics: {
-            viewCount: string;
-            likeCount: string;
-            commentCount: string;
-        };
-    }[];
-}
-
-// Store 타입 정의 (Supabase 테이블 기반)
-interface Store {
-    id?: string; // UUID
-    created_at?: string;
-    name: string;
-    desc?: string;
-    like?: number;
-    star?: number;
-    images?: string; // JSON 문자열 형태의 이미지 배열
-    options?: JSON; // jsonb 타입
-    detail?: string;
-    tag?: string;
-    address: string;
-    review_ids?: string[]; // UUID 배열
-    user_id: string; // UUID
-    mainimage?: string;
-    addressVerified?: boolean;
-    // 추가 필드 (API 처리용)
-    videoId?: string;
-    videoUrl?: string;
-    contents?: string;
-    rating?: string;
-}
 
 interface SearchResult {
     success: boolean;
     message?: string;
-    data?: Store[];
+    data?: StoreWithVideoInfo[];
 }
 
 interface ImportResult {
@@ -92,16 +27,6 @@ interface ImportResult {
         success: Array<{ name: string; message: string }>;
         failed: Array<{ name: string; error: string }>;
     };
-}
-
-interface GPTAnalysisResult {
-    restaurantName: string | null;
-    address: string | null;
-    description: string | null;
-    contact: string | null;
-    businessHours: string | null;
-    rating: number | null;
-    specialties: string | null;
 }
 
 async function searchYoutubeRestaurants(searchQuery: string, maxResults: number = 10): Promise<SearchResult> {
@@ -130,8 +55,8 @@ async function searchYoutubeRestaurants(searchQuery: string, maxResults: number 
             return { success: false, message: '영상 정보를 가져올 수 없습니다.' };
         }
 
-        // 맛집 정보 추출 (GPT 분석 적용)
-        const restaurants = await processYoutubeVideosWithGPT(videoData.items);
+        // 맛집 정보 추출 (기본적인 정보 추출 방식 사용)
+        const restaurants = await processYoutubeVideos(videoData.items);
         return { success: true, data: restaurants };
     } catch (error) {
         console.error('YouTube API 호출 오류:', error);
@@ -142,72 +67,11 @@ async function searchYoutubeRestaurants(searchQuery: string, maxResults: number 
     }
 }
 
-async function analyzeWithGPT(title: string, description: string): Promise<GPTAnalysisResult> {
-    try {
-        // 입력 텍스트 준비 (토큰 수 제한을 위해 설명 앞부분만 사용)
-        const maxDescLength = 3000; // 약 750-1000 토큰 정도
-        const trimmedDesc = description.length > maxDescLength
-            ? description.substring(0, maxDescLength)
-            : description;
+// 기본적인 정보 추출 로직
+async function processYoutubeVideos(videos: YouTubeVideoResponse['items']): Promise<StoreWithVideoInfo[]> {
+    const stores: StoreWithVideoInfo[] = [];
 
-        const inputText = `제목: ${title}\n\n설명: ${trimmedDesc}`;
-
-        const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                {
-                    role: "system",
-                    content: `당신은 유튜브 맛집 리뷰 영상의 설명에서 가게 정보를 추출하는 전문가입니다. 
-                    다음 유튜브 영상 제목과 설명에서 식당 관련 정보를 추출해주세요.
-                    다음 형식의 JSON으로 응답해주세요:
-                    {
-                        "restaurantName": "식당 이름",
-                        "address": "주소",
-                        "description": "가게 특징이나 음식 설명",
-                        "contact": "연락처",
-                        "businessHours": "영업시간",
-                        "rating": 평점 (정수 또는 소수, 1-5 사이),
-                        "specialties": "대표 메뉴"
-                    }
-                    
-                    정보가 명확하지 않거나 없는 경우 해당 필드는 null로 설정해주세요.
-                    가게 이름은 해시태그가 아닌 실제 식당 이름을 찾아주세요.
-                    특히 '가게명:', '주소:', '전화:' 같은 키워드 다음에 오는 정보에 주목하세요.`
-                },
-                {
-                    role: "user",
-                    content: inputText
-                }
-            ],
-            temperature: 0.1, // 정확한 추출을 위해 낮은 temperature 사용
-            response_format: { type: "json_object" } // JSON 응답 강제
-        });
-
-        // 응답 파싱 및 반환
-        const content = completion.choices[0].message.content;
-        if(content) {
-            return JSON.parse(content)
-        }
-
-    } catch (error) {
-        console.error('GPT 분석 오류:', error);
-        // 오류 발생 시 기본값 반환
-        return {
-            restaurantName: null,
-            address: null,
-            description: null,
-            contact: null,
-            businessHours: null,
-            rating: null,
-            specialties: null
-        };
-    }
-}
-
-async function processYoutubeVideosWithGPT(videos: YouTubeVideoResponse['items']): Promise<Store[]> {
-    const stores: Store[] = [];
-
-    // supabase에서 user_id 가져오기 (API 라우트에서 별도로 처리할 수도 있음)
+    // supabase에서 user_id 가져오기
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const user_id = user?.id || '';
@@ -223,48 +87,76 @@ async function processYoutubeVideosWithGPT(videos: YouTubeVideoResponse['items']
             const title = snippet.title;
             const description = snippet.description;
             const thumbnailUrl = snippet.thumbnails.high?.url || snippet.thumbnails.default?.url || '';
+            const viewCount = parseInt(video.statistics.viewCount) || 0;
+            const likeCount = parseInt(video.statistics.likeCount) || 0;
 
-            // GPT API를 사용하여 정보 추출
-            const gptResult = await analyzeWithGPT(title, description);
+            // 1. 제목에서 가게 이름 추출 시도
+            const name = extractRestaurantName(title);
 
-            // 결과에서 유용한 정보 추출
-            let name = gptResult.restaurantName || '';
-            let address = gptResult.address || '';
-            let desc = gptResult.description || '';
-            const rating = gptResult.rating ? gptResult.rating.toString() : '3';
-            const star = gptResult.rating || 3; // 평점을 star 필드에 맞게 변환
+            // 2. 설명에서 주소 추출 시도 (개선된 방식)
+            const address = extractAddressImproved(title, description);
 
-            // GPT가 식당 이름을 찾지 못한 경우 기본 방법으로 보완
-            if (!name) {
-                // 영상 제목에서 기본 정보 추출
-                name = title.split('|')[0].split('-')[0].split('_')[0].trim();
-                name = name.length > 20 ? name.substring(0, 20) : name;
+            // 주소가 없는 경우는 건너뛰기 (필수값)
+            if (!address) {
+                console.log(`주소 정보 없음, 건너뜀: ${name}`);
+                continue;
             }
 
-            // 설명이 없거나 짧은 경우 보완
-            if (!desc || desc.length < 10) {
-                desc = description.split('\n')[0];
-                desc = desc.length > 150 ? desc.substring(0, 150) + '...' : desc;
+            // 3. 설명 추출
+            const desc = extractDescription(description, title);
+
+            // 4. 별점 계산 (조회수와 좋아요 수를 기반으로 한 간단한 알고리즘)
+            const likeRatio = viewCount > 0 ? (likeCount / viewCount) * 100 : 0;
+            const star = Math.min(5, Math.max(3, 3 + (likeRatio > 1 ? 2 : likeRatio > 0.5 ? 1 : 0)));
+
+            // YouTube iframe 포맷을 적용한 상세 설명 생성
+            const youtubeEmbed = `<div data-youtube-video=""><iframe class="w-full aspect-video rounded-lg" width="640" height="480" allowfullscreen="true" autoplay="false" disablekbcontrols="false" enableiframeapi="false" endtime="0" ivloadpolicy="0" loop="false" modestbranding="false" origin="" playlist="" src="https://www.youtube.com/embed/${video.id}" start="0"></iframe></div>`;
+
+            // 향상된 detail 정보 구성
+            let detail = `<h2>${title}</h2>\n\n`;
+
+            // 기본 정보 섹션
+            detail += `<div class="store-info">\n`;
+            detail += `<p><strong>가게명:</strong> ${name || '정보 없음'}</p>\n`;
+            detail += `<p><strong>주소:</strong> ${address}</p>\n`;
+
+            // 추가 정보 섹션
+            const contact = extractContact(description);
+            const businessHours = extractBusinessHours(description);
+
+            detail += `<p><strong>연락처:</strong> ${contact || '정보 없음'}</p>\n`;
+            detail += `<p><strong>영업시간:</strong> ${businessHours || '정보 없음'}</p>\n`;
+
+            // 유튜브 통계 추가
+            detail += `<p><strong>조회수:</strong> ${viewCount.toLocaleString()}회</p>\n`;
+            detail += `<p><strong>좋아요:</strong> ${likeCount.toLocaleString()}개</p>\n`;
+            detail += `</div>\n\n`;
+
+            // 설명 섹션
+            detail += `<div class="store-description">\n`;
+            detail += `<h3>설명</h3>\n<p>${desc}</p>\n`;
+            detail += `</div>\n\n`;
+
+            // 원본 설명 섹션 (축약)
+            if (description && description.length > 0) {
+                const shortDesc = description.length > 500
+                    ? description.substring(0, 500) + '...'
+                    : description;
+
+                detail += `<div class="youtube-description">\n`;
+                detail += `<h3>유튜브 원본 설명</h3>\n`;
+                detail += `<pre style="white-space: pre-wrap;">${shortDesc}</pre>\n`;
+                detail += `</div>\n\n`;
             }
 
-            // 영상 내용을 설명으로 사용
-            let detail = `${title}\n\n`;
-
-            // GPT가 찾은 정보 추가
-            if (gptResult.restaurantName) detail += `가게명: ${gptResult.restaurantName}\n`;
-            if (gptResult.address) detail += `주소: ${gptResult.address}\n`;
-            if (gptResult.contact) detail += `연락처: ${gptResult.contact}\n`;
-            if (gptResult.businessHours) detail += `영업시간: ${gptResult.businessHours}\n`;
-            if (gptResult.specialties) detail += `대표 메뉴: ${gptResult.specialties}\n\n`;
-
-            // 원본 설명 추가
-            detail += `${description}\n\n`;
-
-            // 출처 표시
-            detail += `출처: YouTube - https://www.youtube.com/watch?v=${video.id}`;
+            // 유튜브 영상 섹션
+            detail += `<div class="youtube-video">\n`;
+            detail += `<h3>유튜브 영상</h3>\n${youtubeEmbed}\n`;
+            detail += `<p><a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" rel="noopener noreferrer">유튜브에서 보기</a></p>\n`;
+            detail += `</div>\n`;
 
             // 맛집으로 볼 수 있는 충분한 정보가 있는 경우만 추가
-            if (name && (address || (desc && desc.length > 10))) {
+            if (name) {
                 stores.push({
                     name,
                     address,
@@ -273,12 +165,11 @@ async function processYoutubeVideosWithGPT(videos: YouTubeVideoResponse['items']
                     images: JSON.stringify([thumbnailUrl]), // 문자열로 변환
                     videoId: video.id,
                     videoUrl: `https://www.youtube.com/watch?v=${video.id}`,
-                    detail,  // detail 필드 사용
+                    detail,
                     star: Number(star),
                     tag: 'food',
                     user_id,
-                    like: 0,
-                    addressVerified: false
+                    like: 0
                 });
             }
         } catch (error) {
@@ -291,7 +182,7 @@ async function processYoutubeVideosWithGPT(videos: YouTubeVideoResponse['items']
     return stores;
 }
 
-async function importYoutubeRestaurantsToDatabase(stores: Store[]): Promise<ImportResult> {
+async function importYoutubeRestaurantsToDatabase(stores: StoreWithVideoInfo[]): Promise<ImportResult> {
     interface ResultItem {
         name: string;
         message?: string;
@@ -309,12 +200,21 @@ async function importYoutubeRestaurantsToDatabase(stores: Store[]): Promise<Impo
     if (!user) {
         return {
             success: false,
-            message: '로그인 상태가 아닙니다. 로그인 후 다시 시도해주세요.'
+            message: '로그인 상태가 아닙니다. 로그인 후 다시 시도해주세요.',
         };
     }
 
     for (const store of stores) {
         try {
+            // 유효성 검사 - 필수 필드 확인
+            if (!store.name || !store.address) {
+                results.failed.push({
+                    name: store.name || '이름 없음',
+                    error: '필수 정보(이름 또는 주소)가 누락되었습니다.'
+                });
+                continue;
+            }
+
             // 이미 존재하는 가게인지 확인 (이름과 주소로 중복 체크)
             const { data: existingStore } = await supabase
                 .from('store')
@@ -335,14 +235,10 @@ async function importYoutubeRestaurantsToDatabase(stores: Store[]): Promise<Impo
             const formData = new FormData();
             formData.append('name', store.name);
             formData.append('desc', store.desc || '');
-            formData.append('address', store.address || '주소 정보가 없습니다.');
-            formData.append('detail', store.detail || '');
+            formData.append('address', store.address);
+            // POST 요청에서는 detail 필드를 필요로 하지 않으므로 제외
             formData.append('tag', store.tag || 'food');
 
-            // star 값이 있으면 문자열로 변환하여 추가
-            if (store.star !== undefined) {
-                formData.append('star', store.star.toString());
-            }
 
             // 썸네일 이미지 처리
             if (store.mainimage) {
@@ -370,7 +266,7 @@ async function importYoutubeRestaurantsToDatabase(stores: Store[]): Promise<Impo
             }
         } catch (error) {
             results.failed.push({
-                name: store.name,
+                name: store.name || '알 수 없는 가게',
                 error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
             });
         }
@@ -421,22 +317,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 클라이언트에서 보낸 데이터를 Store 타입으로 변환
-        const stores: Store[] = data.restaurants.map((restaurant: any) => ({
-            name: restaurant.name,
-            address: restaurant.address,
-            desc: restaurant.desc,
-            mainimage: restaurant.mainImage || restaurant.mainimage,
-            images: JSON.stringify(restaurant.images || []),
-            videoId: restaurant.videoId,
-            videoUrl: restaurant.videoUrl,
-            detail: restaurant.contents || restaurant.detail || '',
-            tag: 'food',
-            star: Number(restaurant.rating) || 3,
-            user_id: restaurant.user_id || '',
-            like: 0,
-            addressVerified: false
-        }));
+        // 클라이언트에서 보낸 데이터를 StoreWithVideoInfo 타입으로 변환
+        const stores: StoreWithVideoInfo[] = data.restaurants
+            .filter((restaurant: StoreWithVideoInfo) => restaurant && restaurant.address) // 주소가 없는 경우 필터링
+            .map((restaurant: StoreWithVideoInfo) => ({
+                name: restaurant.name,
+                address: restaurant.address,
+                desc: restaurant.desc || '',
+                mainimage: restaurant.mainimage || '',
+                images: JSON.stringify(restaurant.mainimage ? [restaurant.mainimage] : []),
+                videoId: restaurant.videoId || '',
+                videoUrl: restaurant.videoUrl || '',
+                tag: 'food',
+                star: 0,
+                user_id: restaurant.user_id || '',
+                like: 0
+            }));
 
         const results = await importYoutubeRestaurantsToDatabase(stores);
         return NextResponse.json(results);

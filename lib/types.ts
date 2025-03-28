@@ -21,7 +21,22 @@ export interface Review {
         };
     };
 }
-
+export interface StoreWithVideoInfo {
+    name: string;
+    address: string;
+    desc?: string | null;
+    detail?: string | null;
+    mainimage?: string | null;
+    images?: string | null;
+    tag?: string | null;
+    star?: number | null;
+    like?: number | null;
+    user_id: string;
+    // 확장 필드
+    videoId: string;
+    videoUrl: string;
+    mainImage?: string; // 클라이언트 호환성을 위한 필드
+}
 export type StoreWithReviews = Store & {
     reviews: Review[];
 };
@@ -101,13 +116,51 @@ export interface AutomationConfig {
     verifyAddressAutomatically: boolean; // 주소 자동 검증 여부
 }
 
-export interface KakaoMapResult {
+export interface YouTubeSearchResponse {
+    items: {
+        id: {
+            videoId: string;
+        };
+        snippet: {
+            title: string;
+            description: string;
+            thumbnails: {
+                default?: { url: string; width: number; height: number };
+                medium?: { url: string; width: number; height: number };
+                high?: { url: string; width: number; height: number };
+            };
+        };
+    }[];
+}
+
+export interface YouTubeVideoResponse {
+    items: {
+        id: string;
+        snippet: {
+            title: string;
+            description: string;
+            thumbnails: {
+                default?: { url: string; width: number; height: number };
+                medium?: { url: string; width: number; height: number };
+                high?: { url: string; width: number; height: number };
+            };
+        };
+        contentDetails: {
+            duration: string;
+        };
+        statistics: {
+            viewCount: string;
+            likeCount: string;
+            commentCount: string;
+        };
+    }[];
+}
+
+export interface ImportResult {
     success: boolean;
-    message?: string;
-    data?: {
-        address: string;
-        roadAddress?: string;
-        placeName?: string;
-        placeId?: string;
+    message: string;
+    details?: {
+        success: Array<{ name: string; message: string }>;
+        failed: Array<{ name: string; error: string }>;
     };
 }

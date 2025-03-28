@@ -3,26 +3,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import useAlert from '@/lib/notiflix/useAlert';
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { IoIosArrowBack } from "react-icons/io";
-interface Store {
-    name: string;
-    address: string;
-    desc?: string;
-    mainimage?: string;
-    mainImage?: string; // 클라이언트 호환성을 위한 필드
-    videoId?: string;
-    videoUrl?: string;
-    detail?: string;
-    tag?: string;
-    star?: number;
-    images?: string; // JSON 문자열
-}
+import {StoreWithVideoInfo} from "@/lib/types";
+
 
 interface SearchResult {
     success: boolean;
     message?: string;
-    data?: Store[];
+    data?: StoreWithVideoInfo[];
 }
 
 interface ImportResult {
@@ -37,14 +26,15 @@ interface ImportResult {
 const YouTubeScraper = () => {
     const { notify } = useAlert();
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<Store[]>([]);
-    const [selectedRestaurants, setSelectedRestaurants] = useState<Store[]>([]);
+    const [searchResults, setSearchResults] = useState<StoreWithVideoInfo[]>([]);
+    const [selectedRestaurants, setSelectedRestaurants] = useState<StoreWithVideoInfo[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
-    const router = useRouter()
+    const router = useRouter();
+
     // 검색 결과 중 선택한 맛집 토글
-    const toggleRestaurantSelection = (store: Store) => {
+    const toggleRestaurantSelection = (store: StoreWithVideoInfo) => {
         if (selectedRestaurants.some(r => r.videoId === store.videoId)) {
             setSelectedRestaurants(selectedRestaurants.filter(r => r.videoId !== store.videoId));
         } else {
@@ -70,11 +60,21 @@ const YouTubeScraper = () => {
 
             if (!result.success || !result.data) {
                 notify.failure(result.message || '검색 결과가 없습니다.');
+                setIsSearching(false);
                 return;
             }
 
-            setSearchResults(result.data);
-            notify.success(`${result.data.length}개의 맛집 정보를 찾았습니다.`);
+            // 주소가 없는 맛집 필터링 (클라이언트 측에서도 검증)
+            const validResults = result.data.filter(restaurant => restaurant.address);
+
+            if (validResults.length === 0) {
+                notify.failure('유효한 맛집 정보가 없습니다.');
+                setIsSearching(false);
+                return;
+            }
+
+            setSearchResults(validResults);
+            notify.success(`${validResults.length}개의 맛집 정보를 찾았습니다.`);
         } catch (error) {
             console.error('검색 오류:', error);
             notify.failure('검색 중 오류가 발생했습니다.');
@@ -119,7 +119,9 @@ const YouTubeScraper = () => {
 
     return (
         <div className="mx-auto p-4">
-            <button className={'flex flex-row items-center gap-1'} onClick={()=>router.back()}><IoIosArrowBack />뒤로가기</button>
+            <button className={'flex flex-row items-center gap-1'} onClick={()=>router.back()}>
+                <IoIosArrowBack />뒤로가기
+            </button>
             <h1 className="text-center mt-2 text-2xl font-bold mb-6">유튜브 맛집 검색 및 자동 등록</h1>
 
             {/* 검색 폼 */}
@@ -178,10 +180,10 @@ const YouTubeScraper = () => {
                                     className={`border rounded-lg overflow-hidden cursor-pointer ${isSelected ? 'border-green-500 border-2' : ''}`}
                                     onClick={() => toggleRestaurantSelection(restaurant)}
                                 >
-                                    {(restaurant.mainImage || restaurant.mainimage) && (
+                                    {(restaurant.mainimage || restaurant.mainimage) && (
                                         <div className="h-48 overflow-hidden relative">
                                             <img
-                                                src={restaurant.mainImage || restaurant.mainimage}
+                                                src={restaurant.mainimage || restaurant.mainimage}
                                                 alt={restaurant.name}
                                                 className="w-full h-full object-cover"
                                             />
